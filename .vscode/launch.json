@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Vitest: Debug Browser Tests",
+      "url": "http://localhost:4173/__vitest__",
+      "webRoot": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**"],
+      "trace": true
+    }
+  ]
+}
