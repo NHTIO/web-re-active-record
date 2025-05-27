@@ -1,8 +1,0 @@
-/**
- * @module @nhtio/eslint-config/rules/vueprint_type_import_only
- */
-/**
- * An ESLint rule that disallows non-type imports from "@jakguru/vueprint".
- */
-declare const vueprintTypeImportOnly: import("@typescript-eslint/utils/ts-eslint").RuleModule<"nonTypeImport", [], unknown, import("@typescript-eslint/utils/ts-eslint").RuleListener>;
-export default vueprintTypeImportOnly;

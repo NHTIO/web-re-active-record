@@ -1,2 +1,0 @@
-"use strict";Object.defineProperties(exports,{__esModule:{value:!0},[Symbol.toStringTag]:{value:"Module"}});const e={name:"NHT Overrides",rules:{"handle-callback-err":"off"},files:["**/*.{js,mjs,ts,mts,vue}"]};exports.default=e;
-//# sourceMappingURL=overrides.cjs.map

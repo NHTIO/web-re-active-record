@@ -1,5 +1,0 @@
-# @nhtio/web-encryption
-
-A portable encryption library using aes for use within a web context such as a browser window, web worker or service worker.
-
-For more information, see the [official documentation](https://web-encryption.nht.io)

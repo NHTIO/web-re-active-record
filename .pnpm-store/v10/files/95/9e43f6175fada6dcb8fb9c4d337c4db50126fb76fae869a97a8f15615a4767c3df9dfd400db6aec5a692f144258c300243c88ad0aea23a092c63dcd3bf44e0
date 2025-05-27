@@ -1,2 +1,0 @@
-"use strict";Object.defineProperties(exports,{__esModule:{value:!0},[Symbol.toStringTag]:{value:"Module"}});const e=require("../plugins.cjs"),t=require("../plugins/nht.cjs"),n={name:"NHT ESLint Plugins",plugins:{"@nht":t.default,"@typescript-eslint":e.tseslint,json:e.json,markdown:e.markdown,n:e.node,prettier:e.prettier}};exports.default=n;
-//# sourceMappingURL=plugins.cjs.map

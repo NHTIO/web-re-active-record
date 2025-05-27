@@ -1,6 +1,6 @@
 {
   "name": "@nhtio/web-re-active-record",
-  "version": "1.20250526.0",
+  "version": "0.0.1",
   "description": "A Reactive Active Record ORM for Web Browsers and Web Workers",
   "scripts": {
     "customize": "npx jiti bin/customize.ts",

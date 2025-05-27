@@ -1,8 +1,0 @@
-/**
- * @module @nhtio/eslint-config/rules/no_undefined_children_for_programmatic_components
- */
-/**
- * An ESLint rule that disallows explicitly passing undefined as the children argument in calls to Vue's h function.
- */
-declare const noUndefinedChildrenForProgrammaticComponents: import("@typescript-eslint/utils/ts-eslint").RuleModule<"undefinedChildren" | "undefinedChildrenFunction", [], unknown, import("@typescript-eslint/utils/ts-eslint").RuleListener>;
-export default noUndefinedChildrenForProgrammaticComponents;

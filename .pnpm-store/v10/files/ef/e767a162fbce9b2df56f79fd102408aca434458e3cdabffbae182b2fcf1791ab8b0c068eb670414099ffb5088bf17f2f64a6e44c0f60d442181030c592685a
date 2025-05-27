@@ -1,6 +1,0 @@
-export declare const FOR_BROWSER: unique symbol;
-export declare const FOR_WORKER: unique symbol;
-export declare const FOR_SWARM: unique symbol;
-export declare const FOR_LOGGER: unique symbol;
-export declare const CAPTURE_REJECTION_SYMBOL: unique symbol;
-export declare const FOR_ENCRYPTION: unique symbol;

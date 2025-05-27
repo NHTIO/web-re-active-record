@@ -1,8 +1,0 @@
-/**
- * @module @nhtio/eslint-config/rules/no_window_negation
- */
-/**
- * ESLint rule to disallow negation of `window` and suggest using `typeof window === "undefined"` instead.
- */
-declare const noWindowNegation: import("@typescript-eslint/utils/ts-eslint").RuleModule<"unexpectedNegation", [], unknown, import("@typescript-eslint/utils/ts-eslint").RuleListener>;
-export default noWindowNegation;

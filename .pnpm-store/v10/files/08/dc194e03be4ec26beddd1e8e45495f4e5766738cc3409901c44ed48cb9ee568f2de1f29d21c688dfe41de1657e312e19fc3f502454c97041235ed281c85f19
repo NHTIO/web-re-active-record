@@ -1,2 +1,0 @@
-"use strict";const e=require("@typescript-eslint/utils"),i=e.ESLintUtils.RuleCreator(t=>`https://eslint.nht.io/api/@nhtio/eslint-config/rules/variables/${t}.html`);exports.createRule=i;
-//# sourceMappingURL=common-Z_zcXedN.js.map

@@ -1,5 +1,0 @@
-# @nhtio/web-serialization
-
-Provides a mechanism to serialize and deserialize data within a web context such as a browser window, web worker or service worker.
-
-For more information, see the [official documentation](https://web-serialization.nht.io)

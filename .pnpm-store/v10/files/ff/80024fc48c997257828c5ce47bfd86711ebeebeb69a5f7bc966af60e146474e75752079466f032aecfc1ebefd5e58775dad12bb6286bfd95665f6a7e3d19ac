@@ -1,9 +1,0 @@
-/**
- * @module @nhtio/eslint-config/blocks/markdown
- */
-import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint';
-/**
- * An ESLint Configuration for markdown documents
- */
-declare const markdown: FlatConfig.Config;
-export default markdown;

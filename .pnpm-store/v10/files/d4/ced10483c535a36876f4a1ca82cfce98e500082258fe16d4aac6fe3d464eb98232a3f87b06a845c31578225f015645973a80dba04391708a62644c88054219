@@ -1,2 +1,0 @@
-"use strict";Object.defineProperties(exports,{__esModule:{value:!0},[Symbol.toStringTag]:{value:"Module"}});const o={name:"NHT JSON",files:["**/*.json"],language:"json/json",rules:{"json/no-duplicate-keys":"error","json/no-empty-keys":"error","json/no-unsafe-values":"error","json/no-unnormalized-keys":"error","json/top-level-interop":"error"},ignores:["package-lock.json",".vscode/*.json","tsconfig.json","tsconfig.*.json","*.tsconfig.json","./**/tsconfig.json","./**/tsconfig.*.json","./**/*.tsconfig.json"]};exports.default=o;
-//# sourceMappingURL=json.cjs.map
