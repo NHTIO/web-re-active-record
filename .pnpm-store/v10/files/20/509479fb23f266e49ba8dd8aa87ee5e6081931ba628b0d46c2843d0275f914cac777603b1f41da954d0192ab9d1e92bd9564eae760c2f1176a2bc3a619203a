@@ -1,0 +1,25 @@
+/**
+ * Provides common and public types for the encryption module.
+ * @module @nhtio/web-encryption/types
+ */
+import type { Secret } from './lib/class_secret';
+/**
+ * The encryption algorithm to use
+ */
+export type EncryptionAlgorithm = 'aes-256-cbc' | 'aes-128-cbc';
+/**
+ * Config accepted by the encryption
+ */
+export type EncryptionOptions = {
+    /**
+     * The encryption algorithm to use. Default is `aes-256-cbc`
+     */
+    algorithm?: EncryptionAlgorithm;
+    /**
+     * The encryption key to use
+     */
+    secret: string | Secret<string>;
+};
+export type { Serializable as Encodeable, SerializableTypedArray as EncodeableTypedArray, SerializablePrimitive as EncodeablePrimitive, } from '@nhtio/web-serialization/types';
+export type { Base64 } from './lib/class_base64';
+export type { MessageVerifier } from './lib/class_message_verifier';

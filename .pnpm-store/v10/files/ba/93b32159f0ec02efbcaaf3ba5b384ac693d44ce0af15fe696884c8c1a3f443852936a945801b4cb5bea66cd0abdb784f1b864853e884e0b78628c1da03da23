@@ -1,0 +1,5 @@
+# @nhtio/eslint-config
+
+The default set of ESLint rules used by the NHT team
+
+For more information, see the [official documentation](https://eslint-config.nht.io)

@@ -1,0 +1,33 @@
+import { TinyEmitter } from 'tiny-emitter';
+/**
+ * A map from event-names to the tuple of arguments
+ * that listeners for that event will receive.
+ */
+export interface TypedEventMap {
+    [event: string]: any[];
+}
+/**
+ * A strongly-typed Tiny Event Emitter.
+ *
+ * @template Events
+ *   key = event name,
+ *   value = tuple type of that event’s arguments
+ */
+export declare class TypedEventEmitter<Events extends TypedEventMap = TypedEventMap> extends TinyEmitter {
+    /**
+     * Subscribe to an event with a typed listener.
+     */
+    on<E extends keyof Events>(event: E, listener: (...args: Events[E]) => void, ctx?: any): this;
+    /**
+     * Subscribe once to an event.
+     */
+    once<E extends keyof Events>(event: E, listener: (...args: Events[E]) => void, ctx?: any): this;
+    /**
+     * Emit an event, enforcing that the args match Events[E].
+     */
+    emit<E extends keyof Events>(event: E, ...args: Events[E]): this;
+    /**
+     * Remove a listener.
+     */
+    off<E extends keyof Events>(event: E, listener?: (...args: Events[E]) => void): this;
+}

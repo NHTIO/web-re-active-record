@@ -1,0 +1,10 @@
+/**
+ * @module @nhtio/eslint-config
+ */
+import type { TSESLint } from '@typescript-eslint/utils';
+import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint';
+/**
+ * Configures ESLint to use an opinionated config tailored for NHT Development
+ */
+export declare const configure: (...configBlocksToMerge: FlatConfig.Config[]) => TSESLint.FlatConfig.ConfigArray;
+export default configure;

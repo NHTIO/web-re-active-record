@@ -1,0 +1,6 @@
+import type { SerializablePrimitive, SerializableTypedArray } from '@nhtio/web-serialization/types';
+export type CanSerialize = SerializablePrimitive | Date | RegExp | ArrayBuffer | DataView | SerializableTypedArray | CanSerialize[] | {
+    [key: string]: CanSerialize;
+} | Map<CanSerialize, CanSerialize> | Set<CanSerialize> | Error | EvalError | RangeError | ReferenceError | SyntaxError | TypeError | URIError;
+export declare const serialize: (value: any) => Uint8Array;
+export declare const deserialize: <T>(serialized: Uint8Array) => T;

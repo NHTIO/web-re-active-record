@@ -1,0 +1,2 @@
+"use strict";Object.defineProperties(exports,{__esModule:{value:!0},[Symbol.toStringTag]:{value:"Module"}});const e={name:"NHT Default Ignore List",ignores:["node_modules","docs/.vitepress/cache/**/*","docs/.vitepress/dist/**/*","dist",".gitlab-ci-local"]};exports.default=e;
+//# sourceMappingURL=ignore.cjs.map

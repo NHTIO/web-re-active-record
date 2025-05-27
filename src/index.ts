@@ -1,5 +1,5 @@
 /**
- * A Reactive Active Record ORM built on top of Dexie.js
+ * A Reactive Active Record ORM for Web Browsers and Web Workers
  * @module @nhtio/web-re-active-record
  */
 

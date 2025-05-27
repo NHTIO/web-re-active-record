@@ -1,0 +1,35 @@
+import { v as t, c as s } from "./vue-mJz6cNRb.mjs";
+import { vueEssential as p, vueStronglyRecommended as u, vueRecommended as f } from "./blocks.mjs";
+import g from "./blocks/ignore.mjs";
+import d from "./blocks/markdown.mjs";
+import l from "./blocks/json.mjs";
+import c from "./blocks/nht.mjs";
+import a from "./blocks/overrides.mjs";
+import n from "./blocks/plugins.mjs";
+const v = [
+  g,
+  d,
+  l,
+  c,
+  ...p,
+  ...u,
+  ...f,
+  t,
+  a
+], $ = (...i) => {
+  const m = s(...i).map((o) => {
+    if ("plugins" in o) {
+      const { plugins: e } = o;
+      for (const r in e)
+        r in n.plugins || (n.plugins[r] = e[r]);
+      delete o.plugins;
+    }
+    return o;
+  });
+  return [n, ...m, ...v];
+};
+export {
+  $ as configure,
+  $ as default
+};
+//# sourceMappingURL=index.mjs.map

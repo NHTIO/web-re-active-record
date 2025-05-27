@@ -1,0 +1,132 @@
+{
+  "name": "@nhtio/eslint-config",
+  "version": "1.20250514.0",
+  "description": "The default set of ESLint rules used by the NHT team",
+  "keywords": [
+    "eslint",
+    "eslint-config",
+    "typescript",
+    "vue",
+    "adonisjs"
+  ],
+  "author": "Jak Giveon <jak@nht.io>",
+  "homepage": "https://eslint-config.nht.io",
+  "license": "MIT",
+  "dependencies": {
+    "@adonisjs/eslint-config": "^2.0.0",
+    "@adonisjs/prettier-config": "^1.4.4",
+    "@eslint/json": "^0.11.0",
+    "@eslint/markdown": "^6.3.0",
+    "@stylistic/eslint-plugin-ts": "^4.2.0",
+    "@typescript-eslint/utils": "^8.29.1",
+    "eslint": "^9.24.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-n": "^17.17.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-unicorn": "^58.0.0",
+    "eslint-plugin-vue": "^10.0.0",
+    "espree": "^10.3.0",
+    "vue-eslint-parser": "^10.1.3"
+  },
+  "module": "./index.mjs",
+  "main": "./index.cjs",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.cjs",
+      "types": "./index.d.ts"
+    },
+    "./recommended": {
+      "import": "./recommended.mjs",
+      "require": "./recommended.cjs",
+      "types": "./recommended.d.ts"
+    },
+    "./rules": {
+      "import": "./rules.mjs",
+      "require": "./rules.cjs",
+      "types": "./rules.d.ts"
+    },
+    "./rules/no_default_import": {
+      "import": "./rules/no_default_import.mjs",
+      "require": "./rules/no_default_import.cjs",
+      "types": "./rules/no_default_import.d.ts"
+    },
+    "./rules/no_undefined_children_for_programmatic_components": {
+      "import": "./rules/no_undefined_children_for_programmatic_components.mjs",
+      "require": "./rules/no_undefined_children_for_programmatic_components.cjs",
+      "types": "./rules/no_undefined_children_for_programmatic_components.d.ts"
+    },
+    "./rules/no_window_negation": {
+      "import": "./rules/no_window_negation.mjs",
+      "require": "./rules/no_window_negation.cjs",
+      "types": "./rules/no_window_negation.d.ts"
+    },
+    "./rules/require_function_slots_for_programmatic_components": {
+      "import": "./rules/require_function_slots_for_programmatic_components.mjs",
+      "require": "./rules/require_function_slots_for_programmatic_components.cjs",
+      "types": "./rules/require_function_slots_for_programmatic_components.d.ts"
+    },
+    "./rules/sort_imports_by_type_and_size": {
+      "import": "./rules/sort_imports_by_type_and_size.mjs",
+      "require": "./rules/sort_imports_by_type_and_size.cjs",
+      "types": "./rules/sort_imports_by_type_and_size.d.ts"
+    },
+    "./rules/vueprint_type_import_only": {
+      "import": "./rules/vueprint_type_import_only.mjs",
+      "require": "./rules/vueprint_type_import_only.cjs",
+      "types": "./rules/vueprint_type_import_only.d.ts"
+    },
+    "./plugins": {
+      "import": "./plugins.mjs",
+      "require": "./plugins.cjs",
+      "types": "./plugins.d.ts"
+    },
+    "./plugins/nht": {
+      "import": "./plugins/nht.mjs",
+      "require": "./plugins/nht.cjs",
+      "types": "./plugins/nht.d.ts"
+    },
+    "./blocks/ignore": {
+      "import": "./blocks/ignore.mjs",
+      "require": "./blocks/ignore.cjs",
+      "types": "./blocks/ignore.d.ts"
+    },
+    "./blocks": {
+      "import": "./blocks.mjs",
+      "require": "./blocks.cjs",
+      "types": "./blocks.d.ts"
+    },
+    "./blocks/json": {
+      "import": "./blocks/json.mjs",
+      "require": "./blocks/json.cjs",
+      "types": "./blocks/json.d.ts"
+    },
+    "./blocks/markdown": {
+      "import": "./blocks/markdown.mjs",
+      "require": "./blocks/markdown.cjs",
+      "types": "./blocks/markdown.d.ts"
+    },
+    "./blocks/nht": {
+      "import": "./blocks/nht.mjs",
+      "require": "./blocks/nht.cjs",
+      "types": "./blocks/nht.d.ts"
+    },
+    "./blocks/overrides": {
+      "import": "./blocks/overrides.mjs",
+      "require": "./blocks/overrides.cjs",
+      "types": "./blocks/overrides.d.ts"
+    },
+    "./blocks/plugins": {
+      "import": "./blocks/plugins.mjs",
+      "require": "./blocks/plugins.cjs",
+      "types": "./blocks/plugins.d.ts"
+    },
+    "./blocks/vue": {
+      "import": "./blocks/vue.mjs",
+      "require": "./blocks/vue.cjs",
+      "types": "./blocks/vue.d.ts"
+    }
+  },
+  "packageManager": "pnpm@10.8.0+sha512.0e82714d1b5b43c74610193cb20734897c1d00de89d0e18420aebc5977fa13d780a9cb05734624e81ebd81cc876cd464794850641c48b9544326b5622ca29971",
+  "type": "module"
+}

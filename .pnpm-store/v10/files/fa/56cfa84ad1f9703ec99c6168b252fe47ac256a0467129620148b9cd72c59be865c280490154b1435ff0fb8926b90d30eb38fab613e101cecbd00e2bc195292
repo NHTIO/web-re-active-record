@@ -1,0 +1,9 @@
+/**
+ * @module @nhtio/eslint-config/blocks/ignore
+ */
+import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint';
+/**
+ * An ESLint Configuration for ignoring files and directories
+ */
+declare const ignore: FlatConfig.Config;
+export default ignore;

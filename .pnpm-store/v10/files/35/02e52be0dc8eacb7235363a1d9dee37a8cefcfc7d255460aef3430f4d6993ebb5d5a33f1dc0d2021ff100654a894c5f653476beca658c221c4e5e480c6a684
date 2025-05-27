@@ -1,0 +1,46 @@
+{
+  "name": "eslint-formatter-gitlab",
+  "version": "5.1.0",
+  "description": "Show ESLint results directly in the GitLab code quality results",
+  "author": "Remco Haszing <remcohaszing@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://gitlab.com/remcohaszing/eslint-formatter-gitlab#readme",
+  "repository": "gitlab:remcohaszing/eslint-formatter-gitlab",
+  "funding": "https://github.com/sponsors/remcohaszing",
+  "bugs": "https://gitlab.com/remcohaszing/eslint-formatter-gitlab/-/issues",
+  "exports": "./index.js",
+  "files": [
+    "index.*"
+  ],
+  "scripts": {
+    "prepack": "tsc --build",
+    "test": "c8 node --test --test-reporter @reporters/junit --test-reporter-destination=junit.xml --test-reporter spec --test-reporter-destination stdout"
+  },
+  "keywords": [
+    "eslint",
+    "eslint-formatter",
+    "eslintformatter",
+    "gitlab",
+    "gitlab-ci"
+  ],
+  "dependencies": {
+    "chalk": "^4.0.0",
+    "yaml": "^2.0.0"
+  },
+  "peerDependencies": {
+    "eslint": ">=5"
+  },
+  "devDependencies": {
+    "@reporters/junit": "^1.0.0",
+    "@types/eslint": "^8.0.0",
+    "@types/node": "^20.0.0",
+    "c8": "^8.0.0",
+    "codeclimate-types": "^0.3.0",
+    "eslint": "^8.0.0",
+    "eslint-config-remcohaszing": "^10.0.0",
+    "prettier": "^3.0.0",
+    "remark-cli": "^11.0.0",
+    "remark-preset-remcohaszing": "^2.0.0",
+    "typescript": "^5.0.0"
+  }
+}

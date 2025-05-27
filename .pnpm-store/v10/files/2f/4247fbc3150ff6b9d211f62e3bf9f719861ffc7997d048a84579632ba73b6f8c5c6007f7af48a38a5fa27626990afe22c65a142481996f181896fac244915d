@@ -1,0 +1,85 @@
+/**
+ * Provides the errors for the encryption module.
+ * @module @nhtio/web-encryption/errors
+ */
+interface EncryptionErrorOptions {
+    /**
+     * The cause data property of an Error instance indicates the specific original cause of the error.
+     */
+    cause?: Error;
+    /**
+     * How many rows to trim from the stack trace.
+     * This is useful for removing the stack trace of the current function from the error.
+     */
+    trim?: number;
+}
+declare const EncryptionError: {
+    new (name: string, message: string, options?: EncryptionErrorOptions): {
+        /** @private */
+        readonly $__name: string;
+        /** @private */
+        readonly $__message: string;
+        /** @private */
+        readonly name: string;
+        /** @private */
+        readonly message: string;
+        /** @private */
+        toString(): string;
+        /** @private */
+        readonly [Symbol.toStringTag]: string;
+        /** @private */
+        [Symbol.toPrimitive](hint: "number" | "string" | "default"): string | true;
+        stack?: string;
+        cause?: unknown;
+    };
+    /** @private */
+    [Symbol.hasInstance](instance: unknown): boolean;
+    captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+    prepareStackTrace?: ((err: Error, stackTraces: NodeJS.CallSite[]) => any) | undefined;
+    stackTraceLimit: number;
+};
+/**
+ * @private
+ */
+declare class InsecureAppKeyError extends EncryptionError {
+    constructor();
+    get code(): string;
+}
+/**
+ * @private
+ */
+declare class MissingAppKeyError extends EncryptionError {
+    constructor();
+    get code(): string;
+}
+/**
+ * @private
+ */
+declare class V8UnserializableError extends EncryptionError {
+    #private;
+    constructor(value: unknown);
+    get value(): unknown;
+    get code(): string;
+}
+/**
+ * Thrown when the encryption key does not have sufficient length to be considered secure.
+ */
+export declare const E_INSECURE_APP_KEY: typeof InsecureAppKeyError;
+/**
+ * Thrown when the encryption key is missing.
+ */
+export declare const E_MISSING_APP_KEY: typeof MissingAppKeyError;
+export { E_PAYLOAD_UNSERIALIZABLE } from '@nhtio/web-serialization/errors';
+export type { InsecureAppKeyError, MissingAppKeyError, V8UnserializableError };
+/**
+ * Thrown when there is a runtime exception
+ */
+export declare class RuntimeException extends EncryptionError {
+    #private;
+    constructor(message?: string, options?: ErrorOptions & {
+        code?: string;
+        status?: number;
+    });
+    get code(): string | undefined;
+    get status(): number | undefined;
+}

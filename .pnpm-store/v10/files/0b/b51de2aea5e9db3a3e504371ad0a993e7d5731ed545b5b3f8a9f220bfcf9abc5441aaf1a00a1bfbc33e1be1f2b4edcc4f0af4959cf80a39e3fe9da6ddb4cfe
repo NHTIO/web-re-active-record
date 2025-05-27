@@ -1,0 +1,23 @@
+/**
+ * @module @nhtio/eslint-config/blocks
+ */
+import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint';
+export { default as nht } from './nht';
+export { default as vueTypescript } from './vue';
+export { default as ignore } from './ignore';
+export { default as overrides } from './overrides';
+export { default as json } from './json';
+export { default as markdown } from './markdown';
+export { default as plugins } from './plugins';
+/**
+ * Rules for Error Prevention when using Vue
+ */
+export declare const vueEssential: FlatConfig.Config[];
+/**
+ * Rules for Improving Readability and Code Quality when using Vue
+ */
+export declare const vueStronglyRecommended: FlatConfig.Config[];
+/**
+ * Rules for Potentially Dangerous Patterns when using Vue
+ */
+export declare const vueRecommended: FlatConfig.Config[];

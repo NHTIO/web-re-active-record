@@ -1,0 +1,65 @@
+/**
+ * Easily accessible error classes for Swarm
+ * @module @nhtio/swarm/errors
+ */
+/**
+ * Describes the options for the SwarmError class.
+ */
+export interface SwarmErrorOptions {
+    /**
+     * The cause data property of an Error instance indicates the specific original cause of the error.
+     */
+    cause?: Error;
+    /**
+     * How many rows to trim from the stack trace.
+     * This is useful for removing the stack trace of the current function from the error.
+     */
+    trim?: number;
+}
+/**
+ * Base class for all Swarm errors.
+ * @extends Error
+ */
+declare class SwarmError extends Error {
+    /** @private */
+    readonly $__name: string;
+    /** @private */
+    readonly $__message: string;
+    /**
+     * Creates a new SwarmError instance.
+     * @param message The error message.
+     * @param options The error options.
+     */
+    constructor(message: string, options?: SwarmErrorOptions);
+    get name(): string;
+    get message(): string;
+    get [Symbol.toStringTag](): string;
+    toString(): string;
+    [Symbol.toPrimitive](hint: 'number' | 'string' | 'default'): string | true;
+    static [Symbol.hasInstance](instance: unknown): boolean;
+}
+export type { SwarmError };
+/**
+ * Thrown by the {@link @nhtio/swarm!Swarm | Swarm} class when trying to be initialized in an environment that does not support Service Workers.
+ */
+export declare class UnsupportedEnvironmentError extends SwarmError {
+    constructor();
+}
+/**
+ * Thrown by the {@link @nhtio/swarm!Swarm | Swarm} class when trying to be initialize more than one instance within the same context.
+ */
+export declare class AlreadyInitializedInContextError extends SwarmError {
+    constructor();
+}
+/**
+ * Thrown by the {@link @nhtio/swarm!Swarm | Swarm} class when a request to the leader is not answered.
+ */
+export declare class RequestTimeoutError extends SwarmError {
+    constructor(event: string | number | symbol);
+}
+/**
+ * Thrown by the {@link @nhtio/swarm!Swarm | Swarm} class trying to retrieve an instance without having previously or currently provided an encryption key.
+ */
+export declare class MissingEncryptionKey extends SwarmError {
+    constructor();
+}

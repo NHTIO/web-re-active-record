@@ -1,0 +1,2 @@
+"use strict";Object.defineProperties(exports,{__esModule:{value:!0},[Symbol.toStringTag]:{value:"Module"}});require("espree");require("typescript-eslint");const e=require("../vue-Gebfgb-C.js");require("vue-eslint-parser");exports.default=e.vue;
+//# sourceMappingURL=vue.cjs.map

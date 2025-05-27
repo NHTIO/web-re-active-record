@@ -1,0 +1,55 @@
+import { c as a } from "../common-CU_gyL-S.mjs";
+const u = a({
+  name: "requireFunctionSlotsForProgrammaticComponents",
+  meta: {
+    type: "problem",
+    docs: {
+      description: "Require function slots for components rendered using Vue's h function. For non-string tags (i.e. components), children must be a function or an object with function properties."
+    },
+    schema: [],
+    // no options
+    messages: {
+      invalidChildren: "Slots for components must be provided as a function or an object with function properties."
+    }
+  },
+  create(s) {
+    function n(e) {
+      return e && (e.type === "ArrowFunctionExpression" || e.type === "FunctionExpression");
+    }
+    return {
+      CallExpression(e) {
+        if (e.callee && e.callee.type === "Identifier" && e.callee.name === "h") {
+          if (e.arguments.length < 3)
+            return;
+          const o = e.arguments[0], t = e.arguments[2];
+          if (o.type === "Literal" && typeof o.value == "string" || n(t))
+            return;
+          if (t.type === "ObjectExpression") {
+            let r = !0;
+            for (const i of t.properties) {
+              if (i.type !== "Property") {
+                r = !1;
+                break;
+              }
+              if (!n(i.value)) {
+                r = !1;
+                break;
+              }
+            }
+            if (r)
+              return;
+          }
+          s.report({
+            node: t,
+            messageId: "invalidChildren"
+          });
+        }
+      }
+    };
+  },
+  defaultOptions: []
+});
+export {
+  u as default
+};
+//# sourceMappingURL=require_function_slots_for_programmatic_components.mjs.map

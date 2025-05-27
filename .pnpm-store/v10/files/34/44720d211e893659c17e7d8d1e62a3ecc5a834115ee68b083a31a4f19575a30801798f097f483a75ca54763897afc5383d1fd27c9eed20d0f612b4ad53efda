@@ -1,0 +1,7 @@
+import { configure as e } from "./index.mjs";
+const r = e();
+export {
+  r as default,
+  r as recommended
+};
+//# sourceMappingURL=recommended.mjs.map

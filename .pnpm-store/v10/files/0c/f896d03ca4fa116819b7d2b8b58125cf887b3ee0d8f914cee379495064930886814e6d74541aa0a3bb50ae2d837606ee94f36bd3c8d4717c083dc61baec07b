@@ -1,0 +1,6 @@
+import type { BrowserInfo } from '@nhtio/swarm/types';
+/**
+ * Get the current browser information
+ * @returns {@link BrowserInfo}
+ */
+export declare const getBrowserInfo: () => BrowserInfo;

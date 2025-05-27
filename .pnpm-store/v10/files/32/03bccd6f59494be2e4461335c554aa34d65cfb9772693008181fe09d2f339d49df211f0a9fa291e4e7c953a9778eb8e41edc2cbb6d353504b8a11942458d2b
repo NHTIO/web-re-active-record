@@ -1,0 +1,23 @@
+import type { Serializable } from '../types';
+export declare class Serialization {
+    #private;
+    constructor();
+    encode(data: Serializable): Uint8Array;
+    decode<T = any>(data: Uint8Array): T;
+    static encode(data: Serializable): Uint8Array;
+    static decode<T>(data: Uint8Array): T;
+}
+/**
+ * Serializes the given data into a Uint8Array.
+ * @typeParam T - The type of the data to be serialized
+ * @param data Serializable data to be serialized
+ * @returns A Uint8Array representing the serialized data
+ */
+export declare const serialize: (data: Serializable) => Uint8Array;
+/**
+ * Deserializes the given Uint8Array into the original data type.
+ * @typeParam T - The type of the data which will be returned
+ * @param data Uint8Array to be deserialized
+ * @returns The original data type
+ */
+export declare const deserialize: <T>(data: Uint8Array) => T;

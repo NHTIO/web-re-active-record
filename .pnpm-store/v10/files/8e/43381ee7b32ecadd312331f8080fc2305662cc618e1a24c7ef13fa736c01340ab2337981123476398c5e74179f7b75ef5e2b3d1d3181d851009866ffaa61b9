@@ -1,0 +1,10 @@
+/**
+ * @module @nhtio/eslint-config/blocks/nht
+ */
+import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint';
+/**
+ * An ESLint Configuration for Javascript and TypeScript files with the .js, .mjs, .ts, and .mts extensions as well as
+ * Vue & Vue + TypeScript files with the .vue extension
+ */
+declare const nht: FlatConfig.Config;
+export default nht;

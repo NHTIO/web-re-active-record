@@ -1,0 +1,8 @@
+/**
+ * @module @nhtio/eslint-config/rules/require_function_slots_for_programmatic_components
+ */
+/**
+ * An ESLint rule that enforces the use of function slots for components rendered using Vue's h function.
+ */
+declare const requireFunctionSlotsForProgrammaticComponents: import("@typescript-eslint/utils/ts-eslint").RuleModule<"invalidChildren", [], unknown, import("@typescript-eslint/utils/ts-eslint").RuleListener>;
+export default requireFunctionSlotsForProgrammaticComponents;

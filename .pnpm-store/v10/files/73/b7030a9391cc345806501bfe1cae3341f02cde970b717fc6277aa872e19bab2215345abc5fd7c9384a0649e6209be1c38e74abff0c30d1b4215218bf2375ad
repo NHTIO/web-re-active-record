@@ -1,0 +1,9 @@
+/**
+ * @module @nhtio/eslint-config/blocks/json
+ */
+import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint';
+/**
+ * An ESLint Configuration for JSON files
+ */
+declare const json: FlatConfig.Config;
+export default json;

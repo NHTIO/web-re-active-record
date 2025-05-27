@@ -1,0 +1,26 @@
+/**
+ * Returns true if the environment is a browser tab
+ * @returns {boolean} - true if the environment is a browser tab
+ */
+export declare const isTabEnvironment: () => boolean;
+/**
+ * Returns true if the environment is a service worker
+ * @returns {boolean} - true if the environment is a service worker
+ */
+export declare const isWorkerEnvironment: () => boolean;
+/**
+ * Returns true if the environment is an SSR (Server-Side Rendering) environment
+ * @returns {boolean} - true if the environment is an SSR environment
+ */
+export declare const isSsrEnvironment: () => boolean;
+/**
+ * Return true if the environment is a Safari browser
+ * @returns {boolean} - true if the environment is a Safari browser
+ */
+export declare const isSafari: () => boolean;
+/**
+ * Return the global object for the current environment
+ * @returns An object representing the global scope
+ */
+export declare const getGlobal: () => Window | WorkerGlobalScope;
+export declare const makeRandomId: (length: number) => string;

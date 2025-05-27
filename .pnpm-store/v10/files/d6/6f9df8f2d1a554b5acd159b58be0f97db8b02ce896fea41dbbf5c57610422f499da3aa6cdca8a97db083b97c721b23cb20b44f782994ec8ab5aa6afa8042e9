@@ -1,0 +1,75 @@
+var o = Object.defineProperty;
+var a = (t, s, r) => s in t ? o(t, s, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[s] = r;
+var n = (t, s, r) => a(t, typeof s != "symbol" ? s + "" : s, r);
+const u = "1.20250430.0";
+class l {
+  /**
+   * Creates a new TypedEventEmitter instance.
+   */
+  constructor() {
+    /**
+     * The internal event listener map for the emitter.
+     */
+    n(this, "e");
+    this.e = {};
+  }
+  /**
+   * Subscribe to an event with a typed listener.
+   * @param event - The event name.
+   * @param listener - The listener function.
+   * @param ctx - The `this` context to apply to the listener when it is called
+   * @returns the current instance for chaining
+   */
+  on(s, r, i) {
+    return Array.isArray(this.e[s]) || (this.e[s] = []), this.e[s].push({
+      fn: r,
+      ctx: i || null
+    }), this;
+  }
+  /**
+   * Subscribe to an event once with a typed listener.
+   * @param event - The event name.
+   * @param listener - The listener function.
+   * @param ctx - The `this` context to apply to the listener when it is called
+   * @returns the current instance for chaining
+   */
+  once(s, r, i) {
+    const f = this;
+    function h() {
+      r.apply(i || null, arguments), f.off(s, h);
+    }
+    return h._ = r, this.on(s, h, i);
+  }
+  /**
+   * Emit an event.
+   * @param event - The event name.
+   * @param args - The arguments to pass to the listeners.
+   * @returns the current instance for chaining
+   */
+  emit(s, ...r) {
+    const i = this.e[s];
+    return Array.isArray(i) && i.forEach((f) => {
+      f.fn.apply(f.ctx || null, r);
+    }), this;
+  }
+  /**
+   * Unsubscribe from an event.
+   * @param event - The event name.
+   * @param listener - Optional. The listener function to remove.
+   * @returns the current instance for chaining
+   *
+   * @remarks When no listener is provided, all listeners for the event will be removed, otherwise
+   * only the specified listener will be removed.
+   */
+  off(s, r) {
+    return Array.isArray(this.e[s]) && (r ? this.e[s] = this.e[s].filter(
+      // @ts-ignore
+      (i) => i.fn !== r && i.fn._ !== r
+    ) : this.e[s] = []), this;
+  }
+}
+export {
+  l as TypedEventEmitter,
+  u as version
+};
+//# sourceMappingURL=index.mjs.map

@@ -1,0 +1,199 @@
+var d = Object.defineProperty;
+var f = (t) => {
+  throw TypeError(t);
+};
+var p = (t, e, r) => e in t ? d(t, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[e] = r;
+var h = (t, e, r) => p(t, typeof e != "symbol" ? e + "" : e, r), b = (t, e, r) => e.has(t) || f("Cannot " + r);
+var n = (t, e, r) => (b(t, e, "read from private field"), r ? r.call(t) : e.get(t)), l = (t, e, r) => e.has(t) ? f("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, r), E = (t, e, r, s) => (b(t, e, "write to private field"), s ? s.call(t, r) : e.set(t, r), r);
+const u = class extends TypeError {
+  constructor(e, r, s) {
+    const g = s ? { cause: s.cause } : {};
+    super(r, g);
+    /** @private */
+    h(this, "$__name");
+    /** @private */
+    h(this, "$__message");
+    const _ = this.constructor;
+    if (Object.setPrototypeOf(this, _), this.$__name = e, this.$__message = r, typeof Error.captureStackTrace == "function" && Error.captureStackTrace(this, _), typeof this.stack != "string" && Object.defineProperty(this, "stack", {
+      value: "",
+      writable: !0,
+      enumerable: !1,
+      configurable: !0
+    }), this.stack && s && s.trim && s.trim > 0) {
+      const m = this.stack.split(`
+`);
+      m.splice(0, s.trim), this.stack = m.join(`
+`);
+    }
+    Object.defineProperty(this, "name", {
+      get: () => this.$__name,
+      enumerable: !0,
+      configurable: !1
+    }), Object.defineProperty(this, "message", {
+      get: () => this.$__message,
+      enumerable: !0,
+      configurable: !1
+    });
+  }
+  /** @private */
+  get name() {
+    return this.$__name;
+  }
+  /** @private */
+  get message() {
+    return this.$__message;
+  }
+  /** @private */
+  get [Symbol.toStringTag]() {
+    return this.constructor.name;
+  }
+  /** @private */
+  toString() {
+    return `${this.name}: ${this.message}`;
+  }
+  /** @private */
+  [Symbol.toPrimitive](e) {
+    switch (e) {
+      case "string":
+        return this.toString();
+      default:
+        return !0;
+    }
+  }
+  /** @private */
+  static [Symbol.hasInstance](e) {
+    if (typeof e == "object" && e !== null || typeof e == "function") {
+      const r = Object.getPrototypeOf(e);
+      return r.name === this.name || r === this;
+    }
+    return !1;
+  }
+}, A = (t, e, r) => t ? [
+  r,
+  t.details ? t.details.map((s) => s.message).join(" and ") : t.message
+].filter((s) => typeof s == "string").join(" ") : e;
+class y extends u {
+  /** @private */
+  constructor(e) {
+    const r = A(
+      e,
+      "Cannot serialize this value",
+      "Cannot serialize this value:"
+    );
+    super("E_PAYLOAD_UNSERIALIZABLE", r);
+  }
+}
+class O extends u {
+  /** @private */
+  constructor(e) {
+    const r = `Encoding rule "${e}" conflicts with default serialization rules.`;
+    super("E_RULE_CONFLICT", r);
+  }
+}
+var i, a;
+class U extends u {
+  /** @private */
+  constructor(r) {
+    super("E_VALUE_UNSERIALIZABLE", "Encountered an unserializable value");
+    l(this, i);
+    l(this, a);
+    E(this, i, typeof r), E(this, a, ""), Object.defineProperty(this, "kind", {
+      get: () => n(this, i),
+      enumerable: !0,
+      configurable: !1
+    }), Object.defineProperty(this, "inspection", {
+      get: () => n(this, a),
+      enumerable: !0,
+      configurable: !1
+    });
+  }
+  /* v8 ignore next 6 */
+  /**
+   * The result of the `typeof` operator on the value that caused the error.
+   */
+  get kind() {
+    return n(this, i);
+  }
+  /* v8 ignore next 6 */
+  /**
+   * The result of the `inspect` function on the value that caused the error.
+   */
+  get inspection() {
+    return n(this, a);
+  }
+}
+i = new WeakMap(), a = new WeakMap();
+var o;
+class S extends u {
+  /** @private */
+  constructor(r, s) {
+    super("E_VALUE_UNDESERIALIZABLE", "Encountered a value which cannot be deserialized", { cause: s });
+    l(this, o);
+    E(this, o, r.key || "unknown"), Object.defineProperty(this, "kind", {
+      get: () => n(this, o),
+      enumerable: !0,
+      configurable: !1
+    });
+  }
+  /* v8 ignore next 7 */
+  /**
+   * The structured data key that caused the error.
+   * @remarks This is used to identify the type of the value that caused the error.
+   */
+  get kind() {
+    return n(this, o) || "unknown";
+  }
+}
+o = new WeakMap();
+class I extends u {
+  /** @private */
+  constructor(e) {
+    super("E_VALUE_UNPARSEABLE", "Encountered a value which cannot be parsed in order to be deserialized", { cause: e });
+  }
+}
+var c;
+class R extends u {
+  /** @private */
+  constructor(r) {
+    const s = `Value was serialized with version ${r}, but the current version is 1.20250425.1`;
+    super("E_VALUE_FROM_FUTURE_VERSION", s);
+    l(this, c);
+    E(this, c, r), Object.defineProperty(this, "version", {
+      get: () => n(this, c),
+      enumerable: !0,
+      configurable: !1
+    }), Object.defineProperty(this, "current", {
+      get: () => "1.20250425.1",
+      enumerable: !0,
+      configurable: !1
+    });
+  }
+  /* v8 ignore next 6 */
+  /**
+   * The version that caused the error.
+   */
+  get version() {
+    return n(this, c);
+  }
+  /* v8 ignore next 6 */
+  /**
+   * The current version of the library.
+   */
+  get current() {
+    return "1.20250425.1";
+  }
+}
+c = new WeakMap();
+const P = (t) => new Error(
+  `Value was serialized with version ${t}, but the current version is 1.20250425.1`
+);
+export {
+  y as E_PAYLOAD_UNSERIALIZABLE,
+  O as E_RULE_CONFLICT,
+  R as E_VALUE_FROM_FUTURE_VERSION,
+  S as E_VALUE_UNDESERIALIZABLE,
+  I as E_VALUE_UNPARSEABLE,
+  U as E_VALUE_UNSERIALIZABLE,
+  P as W_VALUE_FROM_PAST_VERSION
+};
+//# sourceMappingURL=errors.mjs.map

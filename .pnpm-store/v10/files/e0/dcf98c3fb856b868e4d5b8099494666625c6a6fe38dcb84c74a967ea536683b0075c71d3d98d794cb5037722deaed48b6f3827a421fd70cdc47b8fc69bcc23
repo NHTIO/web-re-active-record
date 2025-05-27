@@ -1,0 +1,9 @@
+/**
+ * @module @nhtio/eslint-config/blocks/plugins
+ */
+import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint';
+/**
+ * An ESLint Configuration for loading eslint plugins
+ */
+declare const plugins: FlatConfig.Config;
+export default plugins;

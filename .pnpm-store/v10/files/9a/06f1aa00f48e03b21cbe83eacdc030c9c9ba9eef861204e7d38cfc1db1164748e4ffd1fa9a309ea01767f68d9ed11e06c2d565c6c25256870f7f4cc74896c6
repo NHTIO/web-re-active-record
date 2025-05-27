@@ -1,0 +1,67 @@
+export declare const LogLevelStyles: {
+    EMERG: (text: string) => string[];
+    ALERT: (text: string) => string[];
+    CRIT: (text: string) => string[];
+    ERROR: (text: string) => string[];
+    WARNING: (text: string) => string[];
+    NOTICE: (text: string) => string[];
+    INFO: (text: string) => string[];
+    DEBUG: (text: string) => string[];
+};
+export declare enum LogLevelValues {
+    EMERG = 0,
+    ALERT = 1,
+    CRIT = 2,
+    ERROR = 3,
+    WARNING = 4,
+    NOTICE = 5,
+    INFO = 6,
+    DEBUG = 7
+}
+export type LogLevel = keyof typeof LogLevelStyles | Lowercase<keyof typeof LogLevelStyles>;
+declare const EnvironmentStyles: {
+    BROWSER: (text: string) => string[];
+    WORKER: (text: string) => string[];
+    SSR: (text: string) => string[];
+    UNKNOWN: (text: string) => string[];
+};
+export type Environment = keyof typeof EnvironmentStyles | Lowercase<keyof typeof EnvironmentStyles>;
+export declare class Logger {
+    #private;
+    constructor(level?: LogLevelValues);
+    get level(): LogLevel;
+    set level(level: LogLevel);
+    EMERG(...args: any[]): void;
+    ALERT(...args: any[]): void;
+    CRIT(...args: any[]): void;
+    ERROR(...args: any[]): void;
+    WARNING(...args: any[]): void;
+    NOTICE(...args: any[]): void;
+    INFO(...args: any[]): void;
+    DEBUG(...args: any[]): void;
+    emerg(...args: any[]): void;
+    alert(...args: any[]): void;
+    crit(...args: any[]): void;
+    error(...args: any[]): void;
+    warning(...args: any[]): void;
+    notice(...args: any[]): void;
+    info(...args: any[]): void;
+    debug(...args: any[]): void;
+}
+export declare const getLogger: () => Logger;
+/**
+ * Sets the log level for the logger.
+ * @param level - The log level to set. Can be one of the following:
+ * - `EMERG` or `emerg`
+ * - `ALERT` or `alert`
+ * - `CRIT` or `crit`
+ * - `ERROR` or `error`
+ * - `WARNING` or `warning`
+ * - `NOTICE` or `notice`
+ * - `INFO` or `info`
+ * - `DEBUG` or `debug`
+ *
+ * @remarks You can also set `window.SWARM_LOG_LEVEL` or `globalThis.SWARM_LOG_LEVEL` to the same values to set the log level globally before initializing any of the Swarm modules.
+ */
+export declare const setLogLevel: (level: LogLevel) => void;
+export {};

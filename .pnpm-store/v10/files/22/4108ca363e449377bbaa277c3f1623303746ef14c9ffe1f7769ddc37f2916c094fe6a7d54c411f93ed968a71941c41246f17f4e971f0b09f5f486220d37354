@@ -1,0 +1,194 @@
+var y = Object.defineProperty;
+var _ = (t) => {
+  throw TypeError(t);
+};
+var b = (t, e, r) => e in t ? y(t, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[e] = r;
+var o = (t, e, r) => b(t, typeof e != "symbol" ? e + "" : e, r), f = (t, e, r) => e.has(t) || _("Cannot " + r);
+var u = (t, e, r) => (f(t, e, "read from private field"), r ? r.call(t) : e.get(t)), m = (t, e, r) => e.has(t) ? _("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, r), g = (t, e, r, s) => (f(t, e, "write to private field"), s ? s.call(t, r) : e.set(t, r), r);
+var E = Object.defineProperty, d = (t, e, r) => e in t ? E(t, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[e] = r, p = (t, e, r) => d(t, typeof e != "symbol" ? e + "" : e, r);
+const S = class extends TypeError {
+  constructor(t, e, r) {
+    const s = r ? { cause: r.cause } : {};
+    super(e, s), p(this, "$__name"), p(this, "$__message");
+    const n = this.constructor;
+    if (Object.setPrototypeOf(this, n), this.$__name = t, this.$__message = e, typeof Error.captureStackTrace == "function" && Error.captureStackTrace(this, n), typeof this.stack != "string" && Object.defineProperty(this, "stack", {
+      value: "",
+      writable: !0,
+      enumerable: !1,
+      configurable: !0
+    }), this.stack && r && r.trim && r.trim > 0) {
+      const a = this.stack.split(`
+`);
+      a.splice(0, r.trim), this.stack = a.join(`
+`);
+    }
+    Object.defineProperty(this, "name", {
+      get: () => this.$__name,
+      enumerable: !0,
+      configurable: !1
+    }), Object.defineProperty(this, "message", {
+      get: () => this.$__message,
+      enumerable: !0,
+      configurable: !1
+    });
+  }
+  /** @private */
+  get name() {
+    return this.$__name;
+  }
+  /** @private */
+  get message() {
+    return this.$__message;
+  }
+  /** @private */
+  get [Symbol.toStringTag]() {
+    return this.constructor.name;
+  }
+  /** @private */
+  toString() {
+    return `${this.name}: ${this.message}`;
+  }
+  /** @private */
+  [Symbol.toPrimitive](t) {
+    switch (t) {
+      case "string":
+        return this.toString();
+      default:
+        return !0;
+    }
+  }
+  /** @private */
+  static [Symbol.hasInstance](t) {
+    if (typeof t == "object" && t !== null || typeof t == "function") {
+      const e = Object.getPrototypeOf(t);
+      return e.name === this.name || e === this;
+    }
+    return !1;
+  }
+}, P = (t, e, r) => t ? [
+  r,
+  t.details ? t.details.map((s) => s.message).join(" and ") : t.message
+].filter((s) => typeof s == "string").join(" ") : e;
+class O extends S {
+  /** @private */
+  constructor(e) {
+    const r = P(
+      e,
+      "Cannot serialize this value",
+      "Cannot serialize this value:"
+    );
+    super("E_PAYLOAD_UNSERIALIZABLE", r);
+  }
+}
+const l = class extends Error {
+  constructor(e, r, s) {
+    const n = s ? { cause: s.cause } : {};
+    super(r, n);
+    /** @private */
+    o(this, "$__name");
+    /** @private */
+    o(this, "$__message");
+    const a = this.constructor;
+    if (Object.setPrototypeOf(this, a), this.$__name = e, this.$__message = r, typeof Error.captureStackTrace == "function" && Error.captureStackTrace(this, a), typeof this.stack != "string" && Object.defineProperty(this, "stack", {
+      value: "",
+      writable: !0,
+      enumerable: !1,
+      configurable: !0
+    }), this.stack && s && s.trim && s.trim > 0) {
+      const h = this.stack.split(`
+`);
+      h.splice(0, s.trim), this.stack = h.join(`
+`);
+    }
+    Object.defineProperty(this, "name", {
+      get: () => this.$__name,
+      enumerable: !0,
+      configurable: !1
+    }), Object.defineProperty(this, "message", {
+      get: () => this.$__message,
+      enumerable: !0,
+      configurable: !1
+    });
+  }
+  /** @private */
+  get name() {
+    return this.$__name;
+  }
+  /** @private */
+  get message() {
+    return this.$__message;
+  }
+  /** @private */
+  get [Symbol.toStringTag]() {
+    return this.constructor.name;
+  }
+  /** @private */
+  toString() {
+    return `${this.name}: ${this.message}`;
+  }
+  /** @private */
+  [Symbol.toPrimitive](e) {
+    switch (e) {
+      case "string":
+        return this.toString();
+      default:
+        return !0;
+    }
+  }
+  /** @private */
+  static [Symbol.hasInstance](e) {
+    if (typeof e == "object" && e !== null || typeof e == "function") {
+      const r = Object.getPrototypeOf(e);
+      return r.name === this.name || r === this;
+    }
+    return !1;
+  }
+};
+class $ extends l {
+  constructor() {
+    super("InsecureAppKeyError", "The value of the encryption key should be at least 16 characters long");
+  }
+  get code() {
+    return "E_INSECURE_APP_KEY";
+  }
+}
+class j extends l {
+  constructor() {
+    super("MissingAppKeyError", "Missing encryption key. The key is required to encrypt values");
+  }
+  get code() {
+    return "E_MISSING_APP_KEY";
+  }
+}
+const k = $, A = j;
+var i, c;
+class I extends l {
+  constructor(r, s) {
+    super("RuntimeException", r || "Runtime exception", { trim: 1 });
+    m(this, i);
+    m(this, c);
+    g(this, i, s == null ? void 0 : s.code), g(this, c, s == null ? void 0 : s.status);
+  }
+  get code() {
+    return u(this, i);
+  }
+  get status() {
+    return u(this, c);
+  }
+}
+i = new WeakMap(), c = new WeakMap();
+const x = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  E_INSECURE_APP_KEY: k,
+  E_MISSING_APP_KEY: A,
+  E_PAYLOAD_UNSERIALIZABLE: O,
+  RuntimeException: I
+}, Symbol.toStringTag, { value: "Module" }));
+export {
+  A as E,
+  I as R,
+  k as a,
+  x as e,
+  O as y
+};
+//# sourceMappingURL=errors-gBU8_uEB.mjs.map

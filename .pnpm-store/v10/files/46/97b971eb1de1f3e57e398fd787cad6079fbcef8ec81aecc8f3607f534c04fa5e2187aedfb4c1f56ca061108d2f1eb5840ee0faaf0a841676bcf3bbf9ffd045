@@ -1,0 +1,105 @@
+import { TypedEventEmitter } from './emitter';
+import type { TypedEventMap } from './emitter';
+import type { Secret } from '@nhtio/swarm';
+export type RequestHandlerMap<Events extends TypedEventMap> = {
+    [K in keyof Events]: (...args: Events[K]) => any;
+};
+/**
+ * The class that provides peer communication between browser tabs and service workers
+ * @typeParam Events - The map of events and their arguments that can be emitted and listened to.
+ */
+export declare class Swarm<Events extends TypedEventMap = TypedEventMap> extends TypedEventEmitter<Events> {
+    #private;
+    private static readonly INTERNAL_HEARTBEAT;
+    private static readonly INTERNAL_OBITUARY;
+    /** @private */
+    constructor(secret?: string | Secret<string>);
+    /**
+     * The ID of the current instance.
+     */
+    get id(): string;
+    /**
+     * Whether this instance is the leader or not.
+     */
+    get leader(): boolean;
+    /**
+     * Emit an event to all connected peers.
+     * @param event - The name of the event to emit.
+     * @param args - The arguments to pass to the event listeners.
+     * @typeParam E - The name of the event to emit.
+     */
+    emit<E extends keyof Events>(event: E, ...args: Events[E]): this;
+    /**
+     * Subscribe to the leadership change event.
+     * @param cb - The callback function to be called when the leadership status changes.
+     */
+    onLeadershipChange(cb: (is: boolean) => void): this;
+    /**
+     * Remove the leadership change event listener.
+     * @param cb - The callback function to be removed from the leadership change event.
+     */
+    offLeadershipChange(cb: (is: boolean) => void): this;
+    /**
+     * Subscribe to the next occurance of a leadership change event.
+     * @param cb - The callback function to be called when the leadership status changes.
+     */
+    onceLeadershipChange(cb: (is: boolean) => void): this;
+    /**
+     * Collect responses from all peers for a specific event.
+     * @param event The name of the event to collect responses for.
+     * @param args The arguments which will be passed to the event handler.
+     * @returns A promise that resolves with an array of responses from all peers.
+     * @typeParam R - The type of the response.
+     * @typeParam E - The name of the event to collect responses for.
+     */
+    collect<R, E extends keyof Events = keyof Events>(event: E, ...args: Events[E]): Promise<R[]>;
+    /**
+     * Register a handler for a specific event which will respond to incoming messages which require a general response
+     * @param event The name of the event to listen for.
+     * @param handler The function to call when the event is emitted.
+     * @typeParam E - The name of the event to listen for.
+     */
+    onCollect<E extends keyof Events>(event: E, handler: (...args: Events[E]) => ReturnType<RequestHandlerMap<Events>[E]>): this;
+    /**
+     * De-register a handler for a specific event which will respond to incoming messages which require a general response
+     * @param event The name of the event to listen for.
+     * @param handler The function to call when the event is emitted.
+     * @typeParam E - The name of the event to listen for.
+     */
+    offCollect<E extends keyof Events>(event: E): this;
+    /**
+     * Request feedback from the leader for a specific event.
+     * @param event The name of the event to request feedback for.
+     * @param args The arguments to pass to the event handler.
+     * @returns A promise that resolves with the response from the event handler.
+     * @typeParam R - The type of the response.
+     * @typeParam E - The name of the event to request feedback for.
+     */
+    request<R = any, E extends keyof Events = keyof Events>(event: E, ...args: Events[E]): Promise<R>;
+    /**
+     * Register a handler for a specific event which will respond to incoming messages which require a response from the leader
+     * @param event The name of the event to listen for.
+     * @param handler The function to call when the event is emitted.
+     * @typeParam E - The name of the event to listen for.
+     */
+    onRequest<E extends keyof Events>(event: E, handler: (...args: Events[E]) => ReturnType<RequestHandlerMap<Events>[E]>): this;
+    /**
+     * De-register a handler for a specific event which will respond to incoming messages which require a response from the leader
+     * @param event The name of the event to listen for.
+     * @param handler The function to call when the event is emitted.
+     * @typeParam E - The name of the event to listen for.
+     */
+    offRequest<E extends keyof Events>(event: E): this;
+    /**
+     * Set the timeout for waiting for a response from `request()` or `collect()`.
+     * @param timeout The timeout in milliseconds to wait for a response.
+     * @returns The current instance of the Swarm class for the current context.
+     */
+    setAwaitResponseTimeout(timeout: number): this;
+    /**
+     * Retreive the current instance of the Swarm class for the current context.
+     * @typeParam Events - The map of events and their arguments that can be emitted and listened to.
+     * @returns The current instance of the Swarm class for the current context.
+     */
+    static instance<Events extends TypedEventMap = TypedEventMap>(secret?: string | Secret<string>): Swarm<Events>;
+}

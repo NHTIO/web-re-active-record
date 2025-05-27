@@ -1,0 +1,40 @@
+/**
+ * The module which contains types for the library.
+ * @module @nhtio/swarm/types
+ */
+/**
+ * An inteface which describes the information about the browser and operating system
+ */
+export interface BrowserInfo {
+    /**
+     * The name of the browser
+     */
+    browserName: string;
+    /**
+     * The version of the browser
+     */
+    browserVersion: string;
+    /**
+     * The name of the operating system
+     */
+    osName: string;
+    /**
+     * The version of the operating system
+     */
+    osVersion: string;
+    /**
+     * The type of platform i.e. desktop / mobile
+     */
+    platformType: string;
+    /**
+     * The name of the browser engine
+     */
+    engineName: string;
+    /**
+     * The version of the browser engine
+     */
+    engineVersion: string;
+}
+export type { TypedEventMap } from './lib/emitter';
+export type { RequestHandlerMap } from './lib/class_swarm';
+export type { LogLevel, LogLevelStyles } from './lib/logger';

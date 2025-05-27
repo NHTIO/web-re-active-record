@@ -1,0 +1,9 @@
+import { Encryption } from '@nhtio/web-encryption';
+import { Secret } from '@nhtio/swarm';
+export declare const getEncryption: (secret?: string | Secret<string>) => Encryption;
+/**
+ * Set the pre-shared key used to ensure that any data shared between nodes in the swarm is encrypted and namespaced.
+ * @param secret The pre-shared key to use
+ * @returns
+ */
+export declare const setPSK: (secret: string | Secret<string>) => void;

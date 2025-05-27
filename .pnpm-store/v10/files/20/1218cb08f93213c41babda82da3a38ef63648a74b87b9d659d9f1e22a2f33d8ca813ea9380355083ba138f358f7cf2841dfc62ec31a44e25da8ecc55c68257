@@ -1,0 +1,8 @@
+import { ESLintUtils as e } from "@typescript-eslint/utils";
+const l = e.RuleCreator(
+  (t) => `https://eslint.nht.io/api/@nhtio/eslint-config/rules/variables/${t}.html`
+);
+export {
+  l as c
+};
+//# sourceMappingURL=common-CU_gyL-S.mjs.map

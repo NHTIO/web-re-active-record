@@ -1,0 +1,24 @@
+export interface EncodingRuleTest {
+    (value: unknown): boolean;
+}
+export interface Encoder<T = any> {
+    (value: T): Uint8Array;
+}
+export interface Decoder<T = any> {
+    (buffer: Uint8Array): T;
+}
+export interface EncodingRule<K extends string = string, T = any> {
+    key: K;
+    test: EncodingRuleTest;
+    encode: Encoder<T>;
+    decode: Decoder<T>;
+}
+export type EncodingRuleMap<R extends EncodingRule<string> = EncodingRule<string>> = Map<R['key'], R>;
+export interface EncodedStructuredData {
+    key?: string;
+    value: Uint8Array;
+    version: string;
+}
+export declare const rules: EncodingRule[];
+export declare const typedCtors: readonly [Int8ArrayConstructor, Uint8ArrayConstructor, Uint8ClampedArrayConstructor, Int16ArrayConstructor, Uint16ArrayConstructor, Int32ArrayConstructor, Uint32ArrayConstructor, Float32ArrayConstructor, Float64ArrayConstructor, BigInt64ArrayConstructor, BigUint64ArrayConstructor];
+export declare const clonableCtors: (TypeErrorConstructor | DateConstructor | RegExpConstructor | ArrayBufferConstructor | DataViewConstructor)[];

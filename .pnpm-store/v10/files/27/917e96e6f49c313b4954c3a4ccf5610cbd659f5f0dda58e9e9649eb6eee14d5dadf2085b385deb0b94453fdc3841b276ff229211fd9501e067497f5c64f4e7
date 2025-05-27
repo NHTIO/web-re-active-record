@@ -1,0 +1,17 @@
+import { tseslint as t, json as n, markdown as r, node as e, prettier as i } from "../plugins.mjs";
+import o from "../plugins/nht.mjs";
+const m = {
+  name: "NHT ESLint Plugins",
+  plugins: {
+    "@nht": o,
+    "@typescript-eslint": t,
+    json: n,
+    markdown: r,
+    n: e,
+    prettier: i
+  }
+};
+export {
+  m as default
+};
+//# sourceMappingURL=plugins.mjs.map

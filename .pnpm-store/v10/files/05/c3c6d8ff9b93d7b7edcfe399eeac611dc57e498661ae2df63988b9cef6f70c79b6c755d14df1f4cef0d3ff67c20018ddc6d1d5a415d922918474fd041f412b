@@ -1,0 +1,29 @@
+import { Base64 } from './class_base64';
+type BufferSafeValue = ArrayBuffer | SharedArrayBuffer | number[] | string | {
+    valueOf(): string | object;
+} | {
+    [Symbol.toPrimitive](hint: 'string'): string;
+};
+type JSONReviver = (this: any, key: string, value: any) => any;
+type JSONReplacer = (this: any, key: string, value: any) => any;
+/**
+ * Compare two values to see if they are equal in constant time.
+ *
+ * @param trustedValue  The “reference” value (e.g. a secret from storage)
+ * @param userInput     The candidate value to compare
+ * @returns             True if they match exactly, false otherwise
+ */
+export declare function safeEqual<T extends BufferSafeValue, U extends BufferSafeValue>(trustedValue: T, userInput: U): boolean;
+export declare const base64: Base64;
+export declare const getRandomString: (size: number) => string;
+/**
+ * A drop-in replacement for JSON.parse with prototype poisoning protection.
+ */
+export declare function safeParse(jsonString: string, reviver?: JSONReviver): any;
+/**
+ * String Javascript values to a JSON string. Handles circular
+ * references and bigints
+ */
+export declare function safeStringify(value: any, replacer?: JSONReplacer, space?: string | number): string | undefined;
+export declare const parseMs: (duration: string | number) => number;
+export {};

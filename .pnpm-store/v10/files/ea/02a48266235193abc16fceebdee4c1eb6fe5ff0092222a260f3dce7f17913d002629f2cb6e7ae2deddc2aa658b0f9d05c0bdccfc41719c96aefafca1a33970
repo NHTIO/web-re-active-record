@@ -1,0 +1,5 @@
+/**
+ * @module @nhtio/eslint-config/rules/sort_imports_by_type_and_size
+ */
+declare const sortImportsByTypeAndSizeRule: import("@typescript-eslint/utils/ts-eslint").RuleModule<"wrongOrder", [], unknown, import("@typescript-eslint/utils/ts-eslint").RuleListener>;
+export default sortImportsByTypeAndSizeRule;

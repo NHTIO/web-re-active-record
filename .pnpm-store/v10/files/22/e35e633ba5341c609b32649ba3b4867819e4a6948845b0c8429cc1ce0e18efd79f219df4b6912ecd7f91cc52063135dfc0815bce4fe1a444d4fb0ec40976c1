@@ -1,0 +1,5 @@
+/**
+ * @module @nhtio/eslint-config/rules/no_default_import
+ */
+declare const noDefaultImportRule: import("@typescript-eslint/utils/ts-eslint").RuleModule<"noDefaultImport", [], unknown, import("@typescript-eslint/utils/ts-eslint").RuleListener>;
+export default noDefaultImportRule;

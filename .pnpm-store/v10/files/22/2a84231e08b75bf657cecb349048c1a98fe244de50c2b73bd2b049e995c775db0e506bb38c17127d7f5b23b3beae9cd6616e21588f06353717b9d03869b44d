@@ -1,0 +1,56 @@
+import { default as joi } from 'joi';
+import type { Serializable } from '../types';
+import type { DateTime, Duration, Interval } from 'luxon';
+export declare const isLuxonDateTime: (value: unknown) => value is DateTime;
+export declare const isLuxonDuration: (value: unknown) => value is Duration;
+export declare const isLuxonInterval: (value: unknown) => value is Interval;
+/** @private */
+export declare const isInstanceOf: (value: unknown, type: string) => boolean;
+/** @private */
+export declare const isPlainObject: (x: unknown) => x is Record<string, unknown>;
+/** @private */
+export declare const isPrimitive: (value: unknown) => boolean;
+export declare const stringSchema: joi.StringSchema<string>;
+export declare const numberSchema: joi.NumberSchema<number>;
+export declare const booleanSchema: joi.BooleanSchema<boolean>;
+export declare const bigintSchema: joi.AnySchema<any>;
+export declare const nullSchema: joi.AnySchema<any>;
+export declare const undefinedSchema: joi.AnySchema<any>;
+export declare const primitiveSchema: joi.AlternativesSchema<any>;
+export declare const int8ArraySchema: joi.AnySchema<any>;
+export declare const uint8ArraySchema: joi.AnySchema<any>;
+export declare const uint8ClampedArraySchema: joi.AnySchema<any>;
+export declare const int16ArraySchema: joi.AnySchema<any>;
+export declare const uint16ArraySchema: joi.AnySchema<any>;
+export declare const int32ArraySchema: joi.AnySchema<any>;
+export declare const uint32ArraySchema: joi.AnySchema<any>;
+export declare const float32ArraySchema: joi.AnySchema<any>;
+export declare const float64ArraySchema: joi.AnySchema<any>;
+export declare const bigInt64ArraySchema: joi.AnySchema<any>;
+export declare const bigUint64ArraySchema: joi.AnySchema<any>;
+export declare const typedArraySchema: joi.AlternativesSchema<any>;
+export declare const dateSchema: joi.AnySchema<any>;
+export declare const regExpSchema: joi.AnySchema<any>;
+export declare const arrayBufferSchema: joi.AnySchema<any>;
+export declare const dataViewSchema: joi.AnySchema<any>;
+export declare const errorSchema: joi.AnySchema<any>;
+export declare const uniterableObjectSchema: joi.AlternativesSchema<any>;
+export declare const luxonDateTimeSchema: joi.AnySchema<any>;
+export declare const luxonDurationSchema: joi.AnySchema<any>;
+export declare const luxonIntervalSchema: joi.AnySchema<any>;
+export declare const luxonSchema: joi.AlternativesSchema<any>;
+export declare const serializableSchema: joi.AlternativesSchema<any>;
+/**
+ * Checks if a value is serializable
+ * @param value - The value to check
+ * @returns A boolean indicating whether the value is serializable
+ */
+export declare const canSerialize: (value: unknown) => value is Serializable;
+/**
+ * Confirms that a value is serializable, returning the typecasted value if it is.
+ * @typeParam T - The expected type of the value
+ * @param value - The value to confirm
+ * @returns The value if it is serializable, typecasted to T
+ * @throws {@link @nhtio/web-serialization/errors!E_PAYLOAD_UNSERIALIZABLE E_PAYLOAD_UNSERIALIZABLE} if the value is not serializable
+ */
+export declare const confirm: <T>(value: unknown) => T;

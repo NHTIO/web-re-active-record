@@ -1,0 +1,8 @@
+import "espree";
+import "typescript-eslint";
+import { v as i } from "../vue-mJz6cNRb.mjs";
+import "vue-eslint-parser";
+export {
+  i as default
+};
+//# sourceMappingURL=vue.mjs.map

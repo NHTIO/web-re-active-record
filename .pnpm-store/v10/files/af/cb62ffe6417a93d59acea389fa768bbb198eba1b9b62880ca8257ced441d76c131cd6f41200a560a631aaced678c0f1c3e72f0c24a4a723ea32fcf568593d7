@@ -1,0 +1,5 @@
+# @nhtio/tiny-typed-emitter
+
+A zero-dependancy, web-safe, strongly typed, tiny event emitter
+
+For more information, see the [official documentation](https://tiny-typed-emitter.nht.io)

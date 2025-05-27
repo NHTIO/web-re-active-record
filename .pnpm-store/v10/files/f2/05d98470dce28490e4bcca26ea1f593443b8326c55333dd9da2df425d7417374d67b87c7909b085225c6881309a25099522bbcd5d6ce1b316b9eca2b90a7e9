@@ -1,0 +1,9 @@
+/**
+ * @module @nhtio/eslint-config/plugins/nht
+ */
+import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint';
+/**
+ * Custom Rules provided by NHT
+ */
+declare const nht: FlatConfig.Plugin;
+export default nht;

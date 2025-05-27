@@ -1,0 +1,48 @@
+import { c as f } from "../common-CU_gyL-S.mjs";
+const n = f({
+  name: "noDefaultImport",
+  meta: {
+    type: "suggestion",
+    docs: {
+      description: "Disallow default imports; enforce `import { default as X } from ...`"
+    },
+    fixable: "code",
+    schema: [],
+    messages: {
+      noDefaultImport: "Default imports are not allowed. Use `import { default as {{name}} } from ...` instead."
+    }
+  },
+  create(a) {
+    const r = a.sourceCode;
+    return {
+      ImportDeclaration(t) {
+        const o = t.specifiers.find(
+          (e) => e.type === "ImportDefaultSpecifier"
+        );
+        if (!o) return;
+        const s = o.local.name, m = t.specifiers.filter(
+          (e) => e.type === "ImportSpecifier"
+        );
+        a.report({
+          node: o,
+          messageId: "noDefaultImport",
+          data: { name: s },
+          fix(e) {
+            const p = `import { ${[
+              `default as ${s}`,
+              ...m.map((c) => r.getText(c))
+            ].join(
+              ", "
+            )} } from ${r.getText(t.source)};`;
+            return e.replaceText(t, p);
+          }
+        });
+      }
+    };
+  },
+  defaultOptions: []
+});
+export {
+  n as default
+};
+//# sourceMappingURL=no_default_import.mjs.map

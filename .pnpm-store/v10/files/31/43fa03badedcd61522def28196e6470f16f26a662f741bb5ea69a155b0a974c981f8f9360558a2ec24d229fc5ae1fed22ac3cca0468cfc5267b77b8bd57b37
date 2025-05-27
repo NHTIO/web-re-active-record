@@ -1,0 +1,89 @@
+var u = Object.defineProperty;
+var m = (e, r, t) => r in e ? u(e, r, { enumerable: !0, configurable: !0, writable: !0, value: t }) : e[r] = t;
+var i = (e, r, t) => m(e, typeof r != "symbol" ? r + "" : r, t);
+class n extends Error {
+  /**
+   * Creates a new SwarmError instance.
+   * @param message The error message.
+   * @param options The error options.
+   */
+  constructor(t, s) {
+    const c = s ? { cause: s.cause } : {};
+    super(t, c);
+    /** @private */
+    i(this, "$__name");
+    /** @private */
+    i(this, "$__message");
+    const o = this.constructor;
+    if (Object.setPrototypeOf(this, o), this.$__name = o.name, this.$__message = t, typeof Error.captureStackTrace == "function" && Error.captureStackTrace(this, o), this.stack && s && s.trim && s.trim > 0) {
+      const a = this.stack.split(`
+`);
+      a.splice(0, s.trim), this.stack = a.join(`
+`);
+    }
+  }
+  get name() {
+    return this.$__name;
+  }
+  get message() {
+    return this.$__message;
+  }
+  get [Symbol.toStringTag]() {
+    return this.constructor.name;
+  }
+  toString() {
+    return `${this.name}: ${this.message}`;
+  }
+  [Symbol.toPrimitive](t) {
+    switch (t) {
+      case "string":
+        return this.toString();
+      default:
+        return !0;
+    }
+  }
+  static [Symbol.hasInstance](t) {
+    if (typeof t == "object" && t !== null || typeof t == "function") {
+      const s = Object.getPrototypeOf(t);
+      return s.name === this.name || s === this;
+    }
+    return !1;
+  }
+}
+class l extends n {
+  constructor() {
+    super("Unable to setup instance because Service Workers are not supported in this environment");
+  }
+}
+class p extends n {
+  constructor() {
+    super(
+      "Unable to setup instance because another instance is already initialized in this context"
+    );
+  }
+}
+class h extends n {
+  constructor(r) {
+    super(`Request timed out while waiting for event "${String(r)}".`);
+  }
+}
+class g extends n {
+  constructor() {
+    super("An encryption key has not been provided at any point in the runtime.");
+  }
+}
+const y = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  AlreadyInitializedInContextError: p,
+  MissingEncryptionKey: g,
+  RequestTimeoutError: h,
+  UnsupportedEnvironmentError: l
+}, Symbol.toStringTag, { value: "Module" }));
+export {
+  p as A,
+  g as M,
+  h as R,
+  l as U,
+  y as e
+};
+//# sourceMappingURL=errors-Cqo3rABf.mjs.map

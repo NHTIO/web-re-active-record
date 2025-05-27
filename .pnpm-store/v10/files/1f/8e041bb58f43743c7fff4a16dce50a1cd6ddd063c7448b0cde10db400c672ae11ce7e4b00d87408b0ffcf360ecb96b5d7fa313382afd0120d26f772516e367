@@ -1,0 +1,9 @@
+/**
+ * @module @nhtio/eslint-config/blocks/vue
+ */
+import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint';
+/**
+ * An ESLint Configuration for Vue + TypeScript files with the .vue extension
+ */
+declare const vue: FlatConfig.Config;
+export default vue;
