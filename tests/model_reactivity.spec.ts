@@ -1,12 +1,19 @@
 import { test as base, expect, vi } from 'vitest'
 import { ReactiveDatabase } from '../src/lib/class_reactive_database'
-import type { ReactiveModelConstructor } from '../src/lib/factory_reactive_model'
+import type {
+  InferredReactiveModelConstructor,
+  ReactiveDatabaseOptions,
+} from '@nhtio/web-re-active-record/types'
 
 type Test = { id: number; name: string; age: number }
 
 const test = base.extend<{
   db: ReactiveDatabase<{ test: Test }>
-  TestModel: ReactiveModelConstructor<Test, 'id', Record<string, any>>
+  TestModel: InferredReactiveModelConstructor<
+    { test: Test },
+    ReactiveDatabaseOptions<{ test: Test }>,
+    'test'
+  >
 }>({
   async db({}, use) {
     const db = new ReactiveDatabase<{ test: Test }>({
@@ -40,7 +47,7 @@ const test = base.extend<{
     await db.shutdown()
   },
   async TestModel({ db }, use) {
-    const TestModel = db.model('test') as ReactiveModelConstructor<Test, 'id', Record<string, any>>
+    const TestModel = db.model('test')
     await use(TestModel)
     await TestModel.truncate()
   },

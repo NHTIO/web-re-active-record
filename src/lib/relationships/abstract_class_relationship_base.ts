@@ -127,8 +127,8 @@ export abstract class RelationshipBase<
   readonly #swarm: UnifiedEventBus
   #booted: boolean
   #database?: ReactiveDatabase<OM>
-  #originatingModelCtor?: ReactiveModelConstructor<T, Extract<keyof T, string>, any>
-  #foreignModelCtor?: ReactiveModelConstructor<F, Extract<keyof F, string>, any>
+  #originatingModelCtor?: ReactiveModelConstructor<OM, T, Extract<keyof T, string>, any, any>
+  #foreignModelCtor?: ReactiveModelConstructor<OM, F, Extract<keyof F, string>, any, any>
   #cached: boolean
   #value?: R | undefined
 
@@ -237,10 +237,10 @@ export abstract class RelationshipBase<
     if (this.#booted) return
     this.#database = database
     this.#originatingModelCtor = this.#database.model(this.#originatingModelTable) as unknown as
-      | ReactiveModelConstructor<T, Extract<keyof T, string>, any>
+      | ReactiveModelConstructor<OM, T, Extract<keyof T, string>, any, any>
       | undefined
     this.#foreignModelCtor = this.#database.model(this.#foreignModelTable) as unknown as
-      | ReactiveModelConstructor<F, Extract<keyof F, string>, any>
+      | ReactiveModelConstructor<OM, F, Extract<keyof F, string>, any, any>
       | undefined
     if (!this.#originatingModelCtor) {
       throw new MissingModelException(

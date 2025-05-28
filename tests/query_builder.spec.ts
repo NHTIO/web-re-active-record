@@ -3,9 +3,13 @@ import { describe, test as baseTest, expect } from 'vitest'
 import { ReactiveDatabase } from '../src/lib/class_reactive_database'
 import { makeModelConstraints, joi } from '@nhtio/web-re-active-record/constraints'
 import type { PlainObject } from '../src/lib/types'
+import type { ReactiveModel } from '../src/lib/factory_reactive_model'
 import type { ReactiveQueryBuilder } from '@nhtio/web-re-active-record/types'
 import type { RelationshipConfiguration } from '@nhtio/web-re-active-record/relationships'
-import type { ReactiveModel, ReactiveModelConstructor } from '../src/lib/factory_reactive_model'
+import type {
+  InferredReactiveModelConstructor,
+  ReactiveDatabaseOptions,
+} from '@nhtio/web-re-active-record/types'
 
 // Test model interface
 interface TestModel extends PlainObject {
@@ -17,7 +21,11 @@ interface TestModel extends PlainObject {
 // Test fixtures interface
 interface TestFixtures {
   db: ReactiveDatabase<{ test: TestModel }>
-  TestModel: ReactiveModelConstructor<TestModel, 'id', Record<string, RelationshipConfiguration>>
+  TestModel: InferredReactiveModelConstructor<
+    { test: TestModel },
+    ReactiveDatabaseOptions<{ test: TestModel }>,
+    'test'
+  >
 }
 
 // Create database model test with fixtures
@@ -56,13 +64,7 @@ const test = baseTest.extend<TestFixtures>({
   TestModel: [
     async ({ db }, use) => {
       const TestModel = db.model('test')
-      await use(
-        TestModel as ReactiveModelConstructor<
-          TestModel,
-          'id',
-          Record<string, RelationshipConfiguration>
-        >
-      )
+      await use(TestModel)
       await TestModel.truncate()
     },
     {
@@ -137,13 +139,9 @@ describe('ReactiveQueryBuilder', () => {
 
     // Test where with callback (grouped conditions)
     const result = (await TestModel.query()
-      .where(
-        (
-          query: ReactiveQueryBuilder<TestModel, 'id', Record<string, RelationshipConfiguration>>
-        ) => {
-          query.where('score', '>', 80).where('score', '<', 90)
-        }
-      )
+      .where((query: ReactiveQueryBuilder<any, any, any, any, any, any>) => {
+        query.where('score', '>', 80).where('score', '<', 90)
+      })
       .fetch()) as ReactiveModel<TestModel, 'id', Record<string, RelationshipConfiguration>>[]
 
     expect(result).toHaveLength(1)

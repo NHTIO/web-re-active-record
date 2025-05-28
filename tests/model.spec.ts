@@ -9,8 +9,10 @@ import {
   ReactiveModelUnsubscribableException,
 } from '@nhtio/web-re-active-record/errors'
 import type { PlainObject } from '../src/lib/types'
-import type { ReactiveModelConstructor } from '../src/lib/factory_reactive_model'
-import type { RelationshipConfiguration } from '@nhtio/web-re-active-record/relationships'
+import type {
+  InferredReactiveModelConstructor,
+  ReactiveDatabaseOptions,
+} from '@nhtio/web-re-active-record/types'
 
 // Simple test model
 interface TestModel extends PlainObject {
@@ -21,7 +23,11 @@ interface TestModel extends PlainObject {
 
 interface TestFixtures {
   db: ReactiveDatabase<{ test: TestModel }>
-  TestModel: ReactiveModelConstructor<TestModel, 'id', Record<string, RelationshipConfiguration>>
+  TestModel: InferredReactiveModelConstructor<
+    { test: TestModel },
+    ReactiveDatabaseOptions<{ test: TestModel }>,
+    'test'
+  >
 }
 
 // Create database model test with fixtures
@@ -58,13 +64,7 @@ const test = baseTest.extend<TestFixtures>({
   TestModel: [
     async ({ db }, use) => {
       const TestModel = db.model('test')
-      await use(
-        TestModel as ReactiveModelConstructor<
-          TestModel,
-          'id',
-          Record<string, RelationshipConfiguration>
-        >
-      )
+      await use(TestModel)
       await TestModel.truncate()
     },
     {

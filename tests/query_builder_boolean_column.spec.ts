@@ -3,8 +3,12 @@ import { expect, describe, test as baseTest } from 'vitest'
 import { ReactiveDatabase } from '../src/lib/class_reactive_database'
 import { makeModelConstraints, joi } from '@nhtio/web-re-active-record/constraints'
 import type { PlainObject } from '../src/lib/types'
+import type { ReactiveModel } from '../src/lib/factory_reactive_model'
 import type { RelationshipConfiguration } from '@nhtio/web-re-active-record/relationships'
-import type { ReactiveModel, ReactiveModelConstructor } from '../src/lib/factory_reactive_model'
+import type {
+  InferredReactiveModelConstructor,
+  ReactiveDatabaseOptions,
+} from '@nhtio/web-re-active-record/types'
 
 interface TestModel extends PlainObject {
   id: number
@@ -13,7 +17,11 @@ interface TestModel extends PlainObject {
 
 interface TestFixtures {
   db: ReactiveDatabase<{ test: TestModel }>
-  TestModel: ReactiveModelConstructor<TestModel, 'id', Record<string, RelationshipConfiguration>>
+  TestModel: InferredReactiveModelConstructor<
+    { test: TestModel },
+    ReactiveDatabaseOptions<{ test: TestModel }>,
+    'test'
+  >
 }
 
 const records = [{ active: true }, { active: false }, { active: true }]

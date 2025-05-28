@@ -15,7 +15,8 @@ import type { LogBusEventMap } from './class_logger'
 import type { Collection, WhereClause } from 'dexie'
 import type { Key, EventMap } from '@nhtio/tiny-typed-emitter'
 import type { UnifiedEventBus } from './class_unified_event_bus'
-import type { PlainObject, StringKeyOf, OnlyMethodKeys } from './types'
+import type { ReactiveDatabaseOptions } from './class_reactive_database'
+import type { PlainObject, StringKeyOf, OnlyMethodKeys, BaseObjectMap } from './types'
 import type { ReactiveModelConstructor, ReactiveModel } from './factory_reactive_model'
 import type { RelationshipConfiguration } from '@nhtio/web-re-active-record/relationships'
 
@@ -38,11 +39,13 @@ export interface WhereCondition<T> {
 }
 
 export interface ReactiveQueryBuilderSubQuery<
+  OM extends BaseObjectMap,
   T extends PlainObject,
   PK extends StringKeyOf<T>,
   R extends Record<string, RelationshipConfiguration>,
+  H extends Required<ReactiveDatabaseOptions<any>['hooks']>,
 > {
-  (query: ReactiveQueryBuilder<T, PK, R>): void
+  (query: ReactiveQueryBuilder<OM, T, PK, R, H>): void
 }
 
 export interface BoundReactiveQueryBuilderSubQuery {
@@ -111,13 +114,17 @@ type PromiseBusEventMap = EventMap<PromiseBusEvents>
  * ```
  */
 export class ReactiveQueryBuilder<
+  OM extends BaseObjectMap,
   T extends PlainObject,
   PK extends StringKeyOf<T>,
   R extends Record<string, RelationshipConfiguration>,
+  H extends Required<ReactiveDatabaseOptions<any>['hooks']>,
+  IT extends ReactiveModel<T, PK, R> = InstanceType<ReactiveModelConstructor<OM, T, PK, R, H>>,
 > implements PromiseLike<any>
 {
+  readonly #hooks: H
   readonly #clauses: ReactiveQueryBuilderClause[]
-  readonly #ctor: ReactiveModelConstructor<T, PK, R>
+  readonly #ctor: ReactiveModelConstructor<OM, T, PK, R, H>
   readonly #relatable: StringKeyOf<R>[]
   readonly #table: EntityTable<T>
   readonly #relations: Set<StringKeyOf<R>>
@@ -128,16 +135,17 @@ export class ReactiveQueryBuilder<
   readonly #abortController: AbortController
   readonly #whereConditions: WhereCondition<T>[]
   readonly #whereWrappedBindingMap: WeakMap<
-    ReactiveQueryBuilderSubQuery<T, PK, R>,
+    ReactiveQueryBuilderSubQuery<OM, T, PK, R, H>,
     BoundReactiveQueryBuilderSubQuery
   >
   #unreffed: boolean
-  #cachedResult?: ReactiveModel<T, PK, R> | ReactiveModel<T, PK, R>[] | undefined
+  #cachedResult?: IT | IT[] | undefined
   #hasCachedResult: boolean
 
   /** @private */
   constructor(
-    ctor: ReactiveModelConstructor<T, PK, R>,
+    hooks: H,
+    ctor: ReactiveModelConstructor<OM, T, PK, R, H>,
     table: EntityTable<T>,
     relatable: StringKeyOf<R>[],
     primaryKey: PK,
@@ -147,8 +155,9 @@ export class ReactiveQueryBuilder<
     clauses?: ReactiveQueryBuilderClause[],
     withRelations?: StringKeyOf<R>[],
     whereConditions?: WhereCondition<T>[],
-    introspector?: ReactiveQueryBuilderIntrospector<T, PK, R>
+    introspector?: ReactiveQueryBuilderIntrospector<OM, T, PK, R, H>
   ) {
+    this.#hooks = hooks
     this.#clauses = []
     this.#ctor = ctor
     this.#relatable = relatable
@@ -327,9 +336,7 @@ export class ReactiveQueryBuilder<
     return this.#cachedResult
   }
 
-  async #getReturnableArray(
-    records: (T | ReactiveModel<T, PK, R>)[]
-  ): Promise<ReactiveModel<T, PK, R>[]> {
+  async #getReturnableArray(records: (T | IT)[]): Promise<IT[]> {
     if (this.#unreffed) {
       this.#log('warning', 'Query builder has been unreffed, aborting query')
       throw new QueryBuilderUnreffedException()
@@ -337,7 +344,7 @@ export class ReactiveQueryBuilder<
 
     // Convert plain objects to ReactiveModels if needed
     const models = records.map((record) =>
-      record instanceof this.#ctor ? record : new this.#ctor(record)
+      record instanceof this.#ctor ? record : new this.#ctor(record as any)
     )
 
     if (this.#relations.size > 0) {
@@ -345,23 +352,23 @@ export class ReactiveQueryBuilder<
       await Promise.all(models.map((model) => model.loadMany(Array.from(this.#relations))))
     }
 
-    return models
+    return models as IT[]
   }
 
-  async #getReturnable(record: T | ReactiveModel<T, PK, R>): Promise<ReactiveModel<T, PK, R>> {
+  async #getReturnable(record: T | IT): Promise<IT> {
     if (this.#unreffed) {
       this.#log('warning', 'Query builder has been unreffed, aborting query')
       throw new QueryBuilderUnreffedException()
     }
 
     // Convert plain object to ReactiveModel if needed
-    const model = record instanceof this.#ctor ? record : new this.#ctor(record)
+    const model = record instanceof this.#ctor ? record : new this.#ctor(record as any)
 
     if (this.#relations.size > 0) {
       await model.loadMany(Array.from(this.#relations))
     }
 
-    return model
+    return model as IT
   }
 
   #evaluateConditionsFor(conditions: WhereCondition<T>[], item: T): item is T {
@@ -466,7 +473,7 @@ export class ReactiveQueryBuilder<
    *   })
    * ```
    */
-  async update(data: Partial<T>): Promise<Array<ReactiveModel<T, PK, R>>> {
+  async update(data: Partial<T>): Promise<Array<IT>> {
     if (this.#unreffed) {
       this.#log('warning', 'Query builder has been unreffed, aborting query')
       throw new QueryBuilderUnreffedException()
@@ -475,13 +482,13 @@ export class ReactiveQueryBuilder<
     const records = await this.fetch()
     if (Array.isArray(records)) {
       this.#log('debug', `Updating ${records.length} records`)
-      records.forEach((record: ReactiveModel<T, PK, R>) => {
+      records.forEach((record: IT) => {
         record.merge(data)
       })
       await Promise.all(records.map((record) => record.save()))
       this.#log('info', `Successfully updated ${records.length} records`)
     }
-    return records as Array<ReactiveModel<T, PK, R>>
+    return records as Array<IT>
   }
 
   #isDexieIndexedKey(key: StringKeyOf<T>) {
@@ -504,12 +511,13 @@ export class ReactiveQueryBuilder<
   }
 
   #whereWrapped(
-    callback: ReactiveQueryBuilderSubQuery<T, PK, R>,
+    callback: ReactiveQueryBuilderSubQuery<OM, T, PK, R, H>,
     type: WhereCondition<T>['type'] = 'and',
     not: boolean = false
   ): this {
-    const introspector = new ReactiveQueryBuilderIntrospector<T, PK, R>()
-    const subQuery = new ReactiveQueryBuilder<T, PK, R>(
+    const introspector = new ReactiveQueryBuilderIntrospector<OM, T, PK, R, H>()
+    const subQuery = new ReactiveQueryBuilder<OM, T, PK, R, H>(
+      this.#hooks,
       this.#ctor,
       this.#table,
       this.#relatable,
@@ -995,7 +1003,7 @@ export class ReactiveQueryBuilder<
    * )
    * ```
    */
-  where(callback: ReactiveQueryBuilderSubQuery<T, PK, R>): this
+  where(callback: ReactiveQueryBuilderSubQuery<OM, T, PK, R, H>): this
 
   /**
    * Filter records using an object of key-value pairs.
@@ -1057,7 +1065,7 @@ export class ReactiveQueryBuilder<
   where(
     keyOrConditions:
       | StringKeyOf<T>
-      | ReactiveQueryBuilderSubQuery<T, PK, R>
+      | ReactiveQueryBuilderSubQuery<OM, T, PK, R, H>
       | Record<StringKeyOf<T>, unknown>
       | boolean,
     operator?: keyof typeof ReactiveQueryBuilderWhereOperators | T[StringKeyOf<T>],
@@ -1088,7 +1096,7 @@ export class ReactiveQueryBuilder<
    *     )
    * ```
    */
-  andWhere(callback: ReactiveQueryBuilderSubQuery<T, PK, R>): this
+  andWhere(callback: ReactiveQueryBuilderSubQuery<OM, T, PK, R, H>): this
 
   /**
    * Add an AND condition using an object of key-value pairs.
@@ -1152,7 +1160,7 @@ export class ReactiveQueryBuilder<
   andWhere(
     keyOrConditions:
       | StringKeyOf<T>
-      | ReactiveQueryBuilderSubQuery<T, PK, R>
+      | ReactiveQueryBuilderSubQuery<OM, T, PK, R, H>
       | Record<StringKeyOf<T>, unknown>
       | boolean,
     operator?: keyof typeof ReactiveQueryBuilderWhereOperators | T[StringKeyOf<T>],
@@ -1180,7 +1188,7 @@ export class ReactiveQueryBuilder<
    *     )  // status = 'active' OR (role = 'admin' AND permissionLevel >= 5)
    * ```
    */
-  orWhere(callback: ReactiveQueryBuilderSubQuery<T, PK, R>): this
+  orWhere(callback: ReactiveQueryBuilderSubQuery<OM, T, PK, R, H>): this
 
   /**
    * Add an OR condition using an object of key-value pairs.
@@ -1244,7 +1252,7 @@ export class ReactiveQueryBuilder<
   orWhere(
     keyOrConditions:
       | StringKeyOf<T>
-      | ReactiveQueryBuilderSubQuery<T, PK, R>
+      | ReactiveQueryBuilderSubQuery<OM, T, PK, R, H>
       | Record<StringKeyOf<T>, unknown>
       | boolean,
     operator?: keyof typeof ReactiveQueryBuilderWhereOperators | T[StringKeyOf<T>],
@@ -1281,7 +1289,7 @@ export class ReactiveQueryBuilder<
    *   .fetch()
    * ```
    */
-  whereNot(callback: ReactiveQueryBuilderSubQuery<T, PK, R>): this
+  whereNot(callback: ReactiveQueryBuilderSubQuery<OM, T, PK, R, H>): this
   whereNot(conditions: Partial<T>): this
   whereNot<K extends StringKeyOf<T>>(key: K, value: T[K]): this
   whereNot<K extends StringKeyOf<T>>(
@@ -1322,7 +1330,7 @@ export class ReactiveQueryBuilder<
    *   .fetch()
    * ```
    */
-  andWhereNot(callback: ReactiveQueryBuilderSubQuery<T, PK, R>): this
+  andWhereNot(callback: ReactiveQueryBuilderSubQuery<OM, T, PK, R, H>): this
   andWhereNot(conditions: Partial<T>): this
   andWhereNot<K extends StringKeyOf<T>>(key: K, value: T[K]): this
   andWhereNot<K extends StringKeyOf<T>>(
@@ -1357,7 +1365,7 @@ export class ReactiveQueryBuilder<
    *   .fetch()
    * ```
    */
-  orWhereNot(callback: ReactiveQueryBuilderSubQuery<T, PK, R>): this
+  orWhereNot(callback: ReactiveQueryBuilderSubQuery<OM, T, PK, R, H>): this
   orWhereNot(conditions: Partial<T>): this
   orWhereNot<K extends StringKeyOf<T>>(key: K, value: T[K]): this
   orWhereNot<K extends StringKeyOf<T>>(
@@ -1945,7 +1953,7 @@ export class ReactiveQueryBuilder<
    *   .increment('points', 10)
    * ```
    */
-  async increment(column: StringKeyOf<T>, amount = 1): Promise<Array<ReactiveModel<T, PK, R>>> {
+  async increment(column: StringKeyOf<T>, amount = 1): Promise<Array<IT>> {
     if (this.#unreffed) {
       this.#log('warning', 'Query builder has been unreffed, aborting query')
       throw new QueryBuilderUnreffedException()
@@ -1954,7 +1962,7 @@ export class ReactiveQueryBuilder<
     const records = await this.fetch()
     if (Array.isArray(records)) {
       this.#log('debug', `Updating ${records.length} records`)
-      records.forEach((record: ReactiveModel<T, PK, R>) => {
+      records.forEach((record: IT) => {
         if (typeof record[column] === 'number') {
           // @ts-ignore
           record[column] = record[column] + amount
@@ -1963,7 +1971,7 @@ export class ReactiveQueryBuilder<
       await Promise.all(records.map((record) => record.save()))
       this.#log('info', `Successfully updated ${records.length} records`)
     }
-    return records as Array<ReactiveModel<T, PK, R>>
+    return records as Array<IT>
   }
 
   /**
@@ -1987,7 +1995,7 @@ export class ReactiveQueryBuilder<
    *   .decrement('stock', 5)
    * ```
    */
-  async decrement(column: StringKeyOf<T>, amount = 1): Promise<Array<ReactiveModel<T, PK, R>>> {
+  async decrement(column: StringKeyOf<T>, amount = 1): Promise<Array<IT>> {
     if (this.#unreffed) {
       this.#log('warning', 'Query builder has been unreffed, aborting query')
       throw new QueryBuilderUnreffedException()
@@ -1996,7 +2004,7 @@ export class ReactiveQueryBuilder<
     const records = await this.fetch()
     if (Array.isArray(records)) {
       this.#log('debug', `Updating ${records.length} records`)
-      records.forEach((record: ReactiveModel<T, PK, R>) => {
+      records.forEach((record: IT) => {
         if (typeof record[column] === 'number') {
           // @ts-ignore
           record[column] = record[column] - amount
@@ -2005,7 +2013,7 @@ export class ReactiveQueryBuilder<
       await Promise.all(records.map((record) => record.save()))
       this.#log('info', `Successfully updated ${records.length} records`)
     }
-    return records as Array<ReactiveModel<T, PK, R>>
+    return records as Array<IT>
   }
 
   /**
@@ -2046,9 +2054,9 @@ export class ReactiveQueryBuilder<
    * // Returns: 'Test1'
    * ```
    */
-  first(): Promise<ReactiveModel<T, PK, R> | undefined> {
+  first(): Promise<IT | undefined> {
     this.#clauses.push({ method: 'first', args: [] })
-    return this.#execute() as Promise<ReactiveModel<T, PK, R> | undefined>
+    return this.#execute() as Promise<IT | undefined>
   }
 
   /**
@@ -2064,9 +2072,9 @@ export class ReactiveQueryBuilder<
    * // Returns: 'Test4'
    * ```
    */
-  last(): Promise<ReactiveModel<T, PK, R> | undefined> {
+  last(): Promise<IT | undefined> {
     this.#clauses.push({ method: 'last', args: [] })
-    return this.#execute() as Promise<ReactiveModel<T, PK, R> | undefined>
+    return this.#execute() as Promise<IT | undefined>
   }
 
   /**
@@ -2225,8 +2233,9 @@ export class ReactiveQueryBuilder<
    * const activeRecords = await baseQuery.fetch()
    * ```
    */
-  clone(introspector?: ReactiveQueryBuilderIntrospector<T, PK, R>) {
-    return new ReactiveQueryBuilder<T, PK, R>(
+  clone(introspector?: ReactiveQueryBuilderIntrospector<OM, T, PK, R, H>) {
+    return new ReactiveQueryBuilder<OM, T, PK, R, H>(
+      this.#hooks,
       this.#ctor,
       this.#table,
       this.#relatable,
@@ -2265,7 +2274,7 @@ export class ReactiveQueryBuilder<
 
   /** @private */
   then<TResult1 = any, TResult2 = never>(
-    onfulfilled?: (value: Array<ReactiveModel<T, PK, R>>) => TResult1 | PromiseLike<TResult1>,
+    onfulfilled?: (value: Array<IT>) => TResult1 | PromiseLike<TResult1>,
     onrejected?: (reason: unknown) => TResult2 | PromiseLike<TResult2>
   ): Promise<TResult1 | TResult2> {
     // @ts-ignore
@@ -2333,14 +2342,15 @@ export class ReactiveQueryBuilder<
         const promise = new Promise<void>((resolve) => {
           promiseBus.once('resolve', resolve)
         })
-        const response = new ReactiveQueryCollection<T, PK, R>(
+        const response = new ReactiveQueryCollection<T, PK, R, H>(
           this,
           modelName,
           modelPrimaryKey,
           this.#eventBus,
           evaluateWhere,
           this.#addCleanupCallback,
-          () => promiseBus.emit('resolve')
+          () => promiseBus.emit('resolve'),
+          this.#hooks
         )
         await promise
         return response
@@ -2355,14 +2365,15 @@ export class ReactiveQueryBuilder<
         const promise = new Promise<void>((resolve) => {
           promiseBus.once('resolve', resolve)
         })
-        const response = new ReactiveQueryResult<T, PK, R>(
+        const response = new ReactiveQueryResult<T, PK, R, H>(
           this,
           modelName,
           modelPrimaryKey,
           this.#eventBus,
           evaluateWhere,
           this.#addCleanupCallback,
-          () => promiseBus.emit('resolve')
+          () => promiseBus.emit('resolve'),
+          this.#hooks
         )
         await promise
         return response
@@ -2377,14 +2388,15 @@ export class ReactiveQueryBuilder<
         const promise = new Promise<void>((resolve) => {
           promiseBus.once('resolve', resolve)
         })
-        const response = new ReactiveQueryResult<T, PK, R>(
+        const response = new ReactiveQueryResult<T, PK, R, H>(
           this,
           modelName,
           modelPrimaryKey,
           this.#eventBus,
           evaluateWhere,
           this.#addCleanupCallback,
-          () => promiseBus.emit('resolve')
+          () => promiseBus.emit('resolve'),
+          this.#hooks
         )
         await promise
         return response
@@ -2402,14 +2414,15 @@ export class ReactiveQueryBuilder<
         const promise = new Promise<void>((resolve) => {
           promiseBus.once('resolve', resolve)
         })
-        const response = new ReactiveQueryCollection<T, PK, R>(
+        const response = new ReactiveQueryCollection<T, PK, R, H>(
           this,
           modelName,
           modelPrimaryKey,
           this.#eventBus,
           evaluateWhere,
           this.#addCleanupCallback,
-          () => promiseBus.emit('resolve')
+          () => promiseBus.emit('resolve'),
+          this.#hooks
         )
         await promise
         return response
@@ -2424,14 +2437,15 @@ export class ReactiveQueryBuilder<
         const promise = new Promise<void>((resolve) => {
           promiseBus.once('resolve', resolve)
         })
-        const response = new ReactiveQueryResult<T, PK, R, number>(
+        const response = new ReactiveQueryResult<T, PK, R, H, number>(
           this,
           modelName,
           modelPrimaryKey,
           this.#eventBus,
           evaluateWhere,
           this.#addCleanupCallback,
-          () => promiseBus.emit('resolve')
+          () => promiseBus.emit('resolve'),
+          this.#hooks
         )
         await promise
         return response

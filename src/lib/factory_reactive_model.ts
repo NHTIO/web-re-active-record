@@ -21,6 +21,7 @@ import {
 } from '@nhtio/web-re-active-record/errors'
 import type { EntityTable } from 'dexie'
 import type { LogBusEventMap } from './class_logger'
+import type { WrapReactiveModelHook } from '../types'
 import type { Encryption } from '@nhtio/web-encryption'
 import type { Listener } from '@nhtio/tiny-typed-emitter'
 import type { UnifiedEventBus } from './class_unified_event_bus'
@@ -154,6 +155,193 @@ export abstract class BaseReactiveModel<
         configurable: false,
       })
     }
+    Object.defineProperty(this, 'fill', {
+      value: (value: Partial<DataValues<T, PK>>) => {
+        this.#fill.call(this, value)
+        return this
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'merge', {
+      value: (value: Partial<DataValues<T, PK>>) => {
+        this.#merge.call(this, value)
+        return this
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'save', {
+      value: async () => {
+        await this.#save.call(this)
+        return this
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'delete', {
+      value: async () => {
+        await this.#delete.call(this)
+        return this
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'reset', {
+      value: () => {
+        this.#reset.call(this)
+        return this
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'toObject', {
+      value: () => this.#toObject.call(this),
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'toJSON', {
+      value: () => this.#toJSON.call(this),
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'toString', {
+      value: () => this.#toString.call(this),
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'related', {
+      value: async <P extends StringKeyOf<R>>(relationship: P) => {
+        return await this.#related.call(this, relationship)
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'load', {
+      value: async (relationship: StringKeyOf<R>) => {
+        return await this.#load.call(this, relationship)
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'loadMany', {
+      value: async (keys: Array<StringKeyOf<R>>) => {
+        return await this.#loadMany.call(this, keys)
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'onChange', {
+      value: (listener: Listener<'change', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any) => {
+        this.#onChange.call(this, listener, ctx)
+        return this
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'onDelta', {
+      value: (listener: Listener<'delta', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any) => {
+        this.#onDelta.call(this, listener, ctx)
+        return this
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'onPropertyChange', {
+      value: (
+        key: StringKeyOf<T> | StringKeyOf<R> | `${StringKeyOf<R>}.${number}`,
+        listener: Listener<`change:${string}`, ReactiveModelChangeEmitterEventMap<T>>,
+        ctx?: any
+      ) => {
+        this.#onPropertyChange.call(this, key, listener, ctx)
+        return this
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'onceChange', {
+      value: (listener: Listener<'change', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any) => {
+        this.#onceChange.call(this, listener, ctx)
+        return this
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'onceDelta', {
+      value: (listener: Listener<'delta', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any) => {
+        this.#onceDelta.call(this, listener, ctx)
+        return this
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'oncePropertyChange', {
+      value: (
+        key: StringKeyOf<T> | StringKeyOf<R> | `${StringKeyOf<R>}.${number}`,
+        listener: Listener<`change:${string}`, ReactiveModelChangeEmitterEventMap<T>>,
+        ctx?: any
+      ) => {
+        this.#oncePropertyChange.call(this, key, listener, ctx)
+        return this
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'offChange', {
+      value: (listener?: Listener<'change', ReactiveModelChangeEmitterEventMap<T>>) => {
+        this.#offChange.call(this, listener)
+        return this
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'offDelta', {
+      value: (listener?: Listener<'delta', ReactiveModelChangeEmitterEventMap<T>>) => {
+        this.#offDelta.call(this, listener)
+        return this
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'offPropertyChange', {
+      value: (
+        key: StringKeyOf<T> | StringKeyOf<R> | `${StringKeyOf<R>}.${number}`,
+        listener?: Listener<`change:${string}`, ReactiveModelChangeEmitterEventMap<T>>
+      ) => {
+        this.#offPropertyChange.call(this, key, listener)
+        return this
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'unref', {
+      value: async () => {
+        await this.#unref.call(this)
+      },
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    })
     if (initial) {
       for (const prop in initial) {
         if (this.#properties.includes(prop as StringKeyOf<T>)) {
@@ -299,6 +487,13 @@ export abstract class BaseReactiveModel<
     }
   }
 
+  /**
+   * A boolean indicating whether the model has been deleted.
+   */
+  get deleted() {
+    return this.#deleted
+  }
+
   #onReactiveModelUpdatedInSwarm(
     modelName: string,
     instanceKey: string,
@@ -350,7 +545,7 @@ export abstract class BaseReactiveModel<
   }
 
   #setProperty<P extends StringKeyOf<T>>(prop: P, value: T[P]): void {
-    if (this.#deleted) {
+    if (this.deleted) {
       throw new ReactiveModelDeletedException()
     }
     if (!this.#properties.includes(prop)) {
@@ -467,8 +662,8 @@ export abstract class BaseReactiveModel<
    * @returns The instance of the model.
    * @category Methods
    */
-  fill(value: Partial<DataValues<T, PK>>): this {
-    if (this.#deleted) {
+  #fill(value: Partial<DataValues<T, PK>>): this {
+    if (this.deleted) {
       throw new ReactiveModelDeletedException()
     }
     for (const key of this.#properties) {
@@ -496,8 +691,8 @@ export abstract class BaseReactiveModel<
    * @returns The instance of the model.
    * @category Methods
    */
-  merge(value: Partial<DataValues<T, PK>>): this {
-    if (this.#deleted) {
+  #merge(value: Partial<DataValues<T, PK>>): this {
+    if (this.deleted) {
       throw new ReactiveModelDeletedException()
     }
     for (const key of this.#properties) {
@@ -523,8 +718,8 @@ export abstract class BaseReactiveModel<
    * @returns The instance of the model.
    * @category Methods
    */
-  async save(): Promise<this> {
-    if (this.#deleted) {
+  async #save(): Promise<this> {
+    if (this.deleted) {
       throw new ReactiveModelDeletedException()
     }
     this.#doConstraintValidation()
@@ -612,11 +807,11 @@ export abstract class BaseReactiveModel<
    * @warning While the model is deleted from the database, its in-memory reference still remains in its last state before being deleted in a read-only state.
    * @category Methods
    */
-  async delete(): Promise<this> {
+  async #delete(): Promise<this> {
     if (!this.key) {
       return this
     }
-    if (this.#deleted) {
+    if (this.deleted) {
       return this
     }
     await this.#table.delete(this.key as any)
@@ -631,8 +826,8 @@ export abstract class BaseReactiveModel<
    * Resets the pending changes for the instance of the model.
    * @category Methods
    */
-  reset() {
-    if (this.#deleted) {
+  #reset() {
+    if (this.deleted) {
       throw new ReactiveModelDeletedException()
     }
     this.#pending.clear()
@@ -643,7 +838,7 @@ export abstract class BaseReactiveModel<
    * @returns The object representation of the model.
    * @category Methods
    */
-  toObject(): T & Partial<Record<StringKeyOf<R>, any>> {
+  #toObject(): T & Partial<Record<StringKeyOf<R>, any>> {
     const obj: any = {}
     for (const key of this.#properties) {
       const value = this.#getProperty(key)
@@ -671,8 +866,8 @@ export abstract class BaseReactiveModel<
    * @returns The object representation of the model.
    * @category Methods
    */
-  toJSON(): T {
-    return this.toObject()
+  #toJSON(): T {
+    return this.#toObject()
   }
 
   /**
@@ -680,8 +875,8 @@ export abstract class BaseReactiveModel<
    * @returns The stringified representation of the model.
    * @category Methods
    */
-  toString(): string {
-    return [this.#modelName, this.#encryption.encrypt(this.toObject())].join(' ')
+  #toString(): string {
+    return [this.#modelName, this.#encryption.encrypt(this.#toObject())].join(' ')
   }
 
   /**
@@ -690,10 +885,8 @@ export abstract class BaseReactiveModel<
    * @returns The value of the relationship
    * @category Methods
    */
-  async related<P extends StringKeyOf<R>>(
-    relationship: P
-  ): Promise<import('./types').RelatedValueMap<R>[P]> {
-    if (this.#deleted) {
+  async #related<P extends StringKeyOf<R>>(relationship: P): Promise<RelatedValueMap<R>[P]> {
+    if (this.deleted) {
       throw new ReactiveModelDeletedException()
     }
     if (!this.#relationships[relationship]) {
@@ -703,7 +896,7 @@ export abstract class BaseReactiveModel<
     if (!rel.prepared) {
       await rel.prepare(this as unknown as ReactiveModel<T, PK, R>, this.#emitter)
     }
-    return rel.value as import('./types').RelatedValueMap<R>[P]
+    return rel.value as RelatedValueMap<R>[P]
   }
 
   /**
@@ -712,8 +905,8 @@ export abstract class BaseReactiveModel<
    * @returns A promise that resolves when the relationship is loaded
    * @category Methods
    */
-  async load(relationship: StringKeyOf<R>) {
-    if (this.#deleted) {
+  async #load(relationship: StringKeyOf<R>) {
+    if (this.deleted) {
       throw new ReactiveModelDeletedException()
     }
     if (!this.#relationships[relationship]) {
@@ -731,11 +924,11 @@ export abstract class BaseReactiveModel<
    * @returns A promise that resolves when all relationships are loaded
    * @category Methods
    */
-  async loadMany(relationships: Array<StringKeyOf<R>>) {
-    if (this.#deleted) {
+  async #loadMany(relationships: Array<StringKeyOf<R>>) {
+    if (this.deleted) {
       throw new ReactiveModelDeletedException()
     }
-    await Promise.all(relationships.map((relationship) => this.load(relationship)))
+    await Promise.all(relationships.map((relationship) => this.#load(relationship)))
   }
 
   /**
@@ -745,8 +938,8 @@ export abstract class BaseReactiveModel<
    * @returns The current ReactiveModel instance
    * @category Methods
    */
-  onChange(listener: Listener<'change', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any): this {
-    if (this.#deleted) {
+  #onChange(listener: Listener<'change', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any): this {
+    if (this.deleted) {
       throw new ReactiveModelUnsubscribableException()
     }
     this.#emitter.onChange(listener, ctx)
@@ -760,8 +953,8 @@ export abstract class BaseReactiveModel<
    * @returns The current ReactiveModel instance
    * @category Methods
    */
-  onDelta(listener: Listener<'delta', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any): this {
-    if (this.#deleted) {
+  #onDelta(listener: Listener<'delta', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any): this {
+    if (this.deleted) {
       throw new ReactiveModelUnsubscribableException()
     }
     this.#emitter.onDelta(listener, ctx)
@@ -776,12 +969,12 @@ export abstract class BaseReactiveModel<
    * @returns The current ReactiveModel instance
    * @category Methods
    */
-  onPropertyChange(
+  #onPropertyChange(
     key: StringKeyOf<T> | StringKeyOf<R> | `${StringKeyOf<R>}.${number}`,
     listener: Listener<`change:${string}`, ReactiveModelChangeEmitterEventMap<T>>,
     ctx?: any
   ): this {
-    if (this.#deleted) {
+    if (this.deleted) {
       throw new ReactiveModelUnsubscribableException()
     }
     this.#emitter.onPropertyChange(key as any, listener, ctx)
@@ -795,8 +988,11 @@ export abstract class BaseReactiveModel<
    * @returns The current ReactiveModel instance
    * @category Methods
    */
-  onceChange(listener: Listener<'change', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any): this {
-    if (this.#deleted) {
+  #onceChange(
+    listener: Listener<'change', ReactiveModelChangeEmitterEventMap<T>>,
+    ctx?: any
+  ): this {
+    if (this.deleted) {
       throw new ReactiveModelUnsubscribableException()
     }
     this.#emitter.onceChange(listener, ctx)
@@ -810,8 +1006,8 @@ export abstract class BaseReactiveModel<
    * @returns The current ReactiveModel instance
    * @category Methods
    */
-  onceDelta(listener: Listener<'delta', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any): this {
-    if (this.#deleted) {
+  #onceDelta(listener: Listener<'delta', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any): this {
+    if (this.deleted) {
       throw new ReactiveModelUnsubscribableException()
     }
     this.#emitter.onceDelta(listener, ctx)
@@ -826,12 +1022,12 @@ export abstract class BaseReactiveModel<
    * @returns The current ReactiveModel instance
    * @category Methods
    */
-  oncePropertyChange(
+  #oncePropertyChange(
     key: StringKeyOf<T> | StringKeyOf<R> | `${StringKeyOf<R>}.${number}`,
     listener: Listener<`change:${string}`, ReactiveModelChangeEmitterEventMap<T>>,
     ctx?: any
   ): this {
-    if (this.#deleted) {
+    if (this.deleted) {
       throw new ReactiveModelUnsubscribableException()
     }
     this.#emitter.oncePropertyChange(key as any, listener, ctx)
@@ -844,7 +1040,7 @@ export abstract class BaseReactiveModel<
    * @returns The current ReactiveModel instance
    * @category Methods
    */
-  offChange(listener?: Listener<'change', ReactiveModelChangeEmitterEventMap<T>>): this {
+  #offChange(listener?: Listener<'change', ReactiveModelChangeEmitterEventMap<T>>): this {
     this.#emitter.offChange(listener)
     return this
   }
@@ -855,7 +1051,7 @@ export abstract class BaseReactiveModel<
    * @returns The current ReactiveModel instance
    * @category Methods
    */
-  offDelta(listener?: Listener<'delta', ReactiveModelChangeEmitterEventMap<T>>): this {
+  #offDelta(listener?: Listener<'delta', ReactiveModelChangeEmitterEventMap<T>>): this {
     this.#emitter.offDelta(listener)
     return this
   }
@@ -867,7 +1063,7 @@ export abstract class BaseReactiveModel<
    * @returns The current ReactiveModel instance
    * @category Methods
    */
-  offPropertyChange(
+  #offPropertyChange(
     key: StringKeyOf<T> | StringKeyOf<R> | `${StringKeyOf<R>}.${number}`,
     listener?: Listener<`change:${string}`, ReactiveModelChangeEmitterEventMap<T>>
   ): this {
@@ -877,10 +1073,9 @@ export abstract class BaseReactiveModel<
 
   /**
    * Cleanup the instance of the model in preparation for garbage collection.
-   * @private
-   * @privateRemarks This is not intended to be used directly by the user. Instead it should be called by the ReactiveDatabase during the cleanup process.
+   * @category Methods
    */
-  async unref() {
+  async #unref() {
     // Set the status to deleted so that we don't have any changes while we are cleaning up
     this.#deleted = true
     // Clear the pending changes
@@ -915,6 +1110,185 @@ export interface AdditionalReactiveModelModelMethods<
   PK extends StringKeyOf<T>,
   R extends Record<string, RelationshipConfiguration>,
 > {
+  /**
+   * Fills missing / undefined properties of the model with the values from the object.
+   * @param value - The object containing the values to fill the model with.
+   * @returns The instance of the model.
+   * @category Methods
+   */
+  fill(value: Partial<DataValues<T, PK>>): this
+
+  /**
+   * Merges the properties of the object into the model.
+   * @param value - The object containing the values to merge into the model.
+   * @returns The instance of the model.
+   * @category Methods
+   */
+  merge(value: Partial<DataValues<T, PK>>): this
+
+  /**
+   * Saves the pending changes for the instance of the model to the database and propagates the changes to the rest of the swarm.
+   * @returns The instance of the model.
+   * @category Methods
+   */
+  save(): Promise<this>
+
+  /**
+   * Deletes the instance of the model from the database and propagates the changes to the rest of the swarm.
+   * @returns The instance of the model.
+   * @category Methods
+   */
+  delete(): Promise<this>
+
+  /**
+   * Resets the pending changes for the instance of the model.
+   * @category Methods
+   */
+  reset(): void
+
+  /**
+   * Returns the object representation of the model.
+   * @returns The object representation of the model.
+   * @category Methods
+   */
+  toObject(): T & Partial<Record<StringKeyOf<R>, any>>
+
+  /**
+   * Returns the object representation of the model.
+   * @returns The object representation of the model.
+   * @category Methods
+   */
+  toJSON(): T
+
+  /**
+   * Returns the stringified representation of the model.
+   * @returns The stringified representation of the model.
+   * @category Methods
+   */
+  toString(): string
+
+  /**
+   * Retrieve the value of a specific relationship.
+   * @param relationship The name of the relationship to get
+   * @returns The value of the relationship
+   * @category Methods
+   */
+  related<P extends StringKeyOf<R>>(relationship: P): Promise<RelatedValueMap<R>[P]>
+
+  /**
+   * Lazy-load a specific relationship.
+   * @param relationship The name of the relationship to load
+   * @returns A promise that resolves when the relationship is loaded
+   * @category Methods
+   */
+  load(relationship: StringKeyOf<R>): Promise<void>
+
+  /**
+   * Lazy-load many relationships.
+   * @param relationships The names of the relationships to load
+   * @returns A promise that resolves when all relationships are loaded
+   * @category Methods
+   */
+  loadMany(relationships: Array<StringKeyOf<R>>): Promise<void>
+
+  /**
+   * Subscribe a listener to events emitted when any of the properties of the model change.
+   * @param listener The callback to be called when the model's properties are changed
+   * @param ctx The `this` context to be used when calling the callback
+   * @returns The current ReactiveModel instance
+   * @category Methods
+   */
+  onChange(listener: Listener<'change', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any): this
+
+  /**
+   * Subscribe a listener to events emitting the delta of the model when any of the properties change.
+   * @param listener The callback to be called when the model's properties are changed
+   * @param ctx The `this` context to be used when calling the callback
+   * @returns The current ReactiveModel instance
+   * @category Methods
+   */
+  onDelta(listener: Listener<'delta', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any): this
+
+  /**
+   * Subscribe a listener to events emitted when a specific property of the model changes.
+   * @param key The property of the model to listen to
+   * @param listener The callback to be called when the model's property is changed
+   * @param ctx The `this` context to be used when calling the callback
+   * @returns The current ReactiveModel instance
+   * @category Methods
+   */
+  onPropertyChange(
+    key: StringKeyOf<T> | StringKeyOf<R> | `${StringKeyOf<R>}.${number}`,
+    listener: Listener<`change:${string}`, ReactiveModelChangeEmitterEventMap<T>>,
+    ctx?: any
+  ): this
+
+  /**
+   * Subscribe a listener once to events emitted when any of the properties of the model change.
+   * @param listener The callback to be called when the model's properties are changed
+   * @param ctx The `this` context to be used when calling the callback
+   * @returns The current ReactiveModel instance
+   * @category Methods
+   */
+  onceChange(listener: Listener<'change', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any): this
+
+  /**
+   * Subscribe a listener once to events emitting the delta of the model when any of the properties change.
+   * @param listener The callback to be called when the model's properties are changed
+   * @param ctx The `this` context to be used when calling the callback
+   * @returns The current ReactiveModel instance
+   * @category Methods
+   */
+  onceDelta(listener: Listener<'delta', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any): this
+
+  /**
+   * Subscribe a listener once to events emitted when a specific property of the model changes.
+   * @param key The property of the model to listen to
+   * @param listener The callback to be called when the model's property is changed
+   * @param ctx The `this` context to be used when calling the callback
+   * @returns The current ReactiveModel instance
+   * @category Methods
+   */
+  oncePropertyChange(
+    key: StringKeyOf<T> | StringKeyOf<R> | `${StringKeyOf<R>}.${number}`,
+    listener: Listener<`change:${string}`, ReactiveModelChangeEmitterEventMap<T>>,
+    ctx?: any
+  ): this
+
+  /**
+   * Unsubscribe a listener or all listeners from events emitted when any of the properties of the model change.
+   * @param listener The callback to be called when the model's properties are changed
+   * @returns The current ReactiveModel instance
+   * @category Methods
+   */
+  offChange(listener?: Listener<'change', ReactiveModelChangeEmitterEventMap<T>>): this
+
+  /**
+   * Unsubscribe a listener or all listeners from events emitted when the delta of the model changes.
+   * @param listener The callback to be called when the model's properties are changed
+   * @returns The current ReactiveModel instance
+   * @category Methods
+   */
+  offDelta(listener?: Listener<'delta', ReactiveModelChangeEmitterEventMap<T>>): this
+
+  /**
+   * Unsubscribe a listener or all listeners from events emitted when a specific property of the model changes.
+   * @param key The property of the model to listen to
+   * @param listener The callback to be called when the model's property is changed
+   * @returns The current ReactiveModel instance
+   * @category Methods
+   */
+  offPropertyChange(
+    key: StringKeyOf<T> | StringKeyOf<R> | `${StringKeyOf<R>}.${number}`,
+    listener?: Listener<`change:${string}`, ReactiveModelChangeEmitterEventMap<T>>
+  ): this
+
+  /**
+   * Cleanup the instance of the model in preparation for garbage collection.
+   * @category Methods
+   */
+  unref(): Promise<void>
+
   /**
    * Creates a new instance of the model with the same properties as the current instance.
    * @returns A new instance of the model with the same properties as the current instance.
@@ -969,18 +1343,32 @@ export interface AdditionalReactiveModelModelMethods<
 export type InferredReactiveModelConstructor<
   ObjectMap extends Record<string, PlainObject>,
   Options extends ReactiveDatabaseOptions<ObjectMap>,
-  K extends keyof ObjectMap & keyof Options['models'],
-> = ReactiveModelConstructor<
-  ObjectMap[K],
-  Options['models'][K] extends { primaryKey: infer PK }
-    ? Extract<keyof ObjectMap[K], string> & (PK & string)
-    : Extract<keyof ObjectMap[K], string>,
-  Options['models'][K] extends { relationships: infer R }
-    ? R extends Record<string, any>
-      ? RelatedValueMap<R>
-      : Record<string, never>
-    : Record<string, never>
->
+  K extends Extract<keyof ObjectMap, string> & Extract<keyof Options['models'], string>,
+  H extends Required<ReactiveDatabaseOptions<ObjectMap>['hooks']> = Required<
+    ReactiveDatabaseOptions<ObjectMap>['hooks']
+  >,
+> = Options['hooks'] extends { wrapReactiveModel: infer Hook }
+  ? Hook extends WrapReactiveModelHook<
+      ObjectMap[K],
+      Options['models'][K]['primaryKey'],
+      Options['models'][K]['relationships'],
+      infer Output
+    >
+    ? Output
+    : ReactiveModelConstructor<
+        ObjectMap,
+        ObjectMap[K],
+        Options['models'][K]['primaryKey'],
+        Options['models'][K]['relationships'],
+        H
+      >
+  : ReactiveModelConstructor<
+      ObjectMap,
+      ObjectMap[K],
+      Options['models'][K]['primaryKey'],
+      Options['models'][K]['relationships'],
+      H
+    >
 
 /**
  * Describes the shape of an instance of a ReactiveModel.
@@ -1014,9 +1402,11 @@ export type ReactiveModel<
  * @typeParam PK - The key of the object which is used as the primary key for the model.
  */
 export interface ReactiveModelConstructor<
+  OM extends BaseObjectMap,
   T extends PlainObject,
   PK extends StringKeyOf<T>,
   R extends Record<string, RelationshipConfiguration>,
+  H extends Required<ReactiveDatabaseOptions<OM>['hooks']>,
 > {
   /**
    * Creates a new instance of the ReactiveModel.
@@ -1028,7 +1418,7 @@ export interface ReactiveModelConstructor<
    * @param value The non-primary key values of the properties for the model.
    */
   create(
-    this: ReactiveModelConstructor<T, PK, R>,
+    this: ReactiveModelConstructor<OM, T, PK, R, H>,
     value: DataValues<T, PK>
   ): Promise<ReactiveModel<T, PK, R>>
   /**
@@ -1036,7 +1426,7 @@ export interface ReactiveModelConstructor<
    * @param values An array of objects containing the non-primary key values of the properties for each model.
    */
   createMany(
-    this: ReactiveModelConstructor<T, PK, R>,
+    this: ReactiveModelConstructor<OM, T, PK, R, H>,
     values: Array<DataValues<T, PK>>
   ): Promise<Array<ReactiveModel<T, PK, R>>>
   /**
@@ -1044,7 +1434,7 @@ export interface ReactiveModelConstructor<
    * @param value The value of the primary key for the model.
    */
   find(
-    this: ReactiveModelConstructor<T, PK, R>,
+    this: ReactiveModelConstructor<OM, T, PK, R, H>,
     value: T[PK]
   ): Promise<ReactiveModel<T, PK, R> | undefined>
   /**
@@ -1052,7 +1442,7 @@ export interface ReactiveModelConstructor<
    * @param values An array of values of the primary key for each model.
    */
   findMany(
-    this: ReactiveModelConstructor<T, PK, R>,
+    this: ReactiveModelConstructor<OM, T, PK, R, H>,
     values: Array<T[PK]>
   ): Promise<Array<ReactiveModel<T, PK, R>>>
   /**
@@ -1060,7 +1450,7 @@ export interface ReactiveModelConstructor<
    * @param value The value of the primary key for the model.
    */
   findOrFail(
-    this: ReactiveModelConstructor<T, PK, R>,
+    this: ReactiveModelConstructor<OM, T, PK, R, H>,
     value: T[PK]
   ): Promise<ReactiveModel<T, PK, R>>
   /**
@@ -1069,7 +1459,7 @@ export interface ReactiveModelConstructor<
    * @param value The value of the property to search for.
    */
   findBy(
-    this: ReactiveModelConstructor<T, PK, R>,
+    this: ReactiveModelConstructor<OM, T, PK, R, H>,
     key: StringKeyOf<T>,
     value: T[StringKeyOf<T>]
   ): Promise<ReactiveModel<T, PK, R> | undefined>
@@ -1079,52 +1469,60 @@ export interface ReactiveModelConstructor<
    * @param value The value of the property to search for.
    */
   findByOrFail(
-    this: ReactiveModelConstructor<T, PK, R>,
+    this: ReactiveModelConstructor<OM, T, PK, R, H>,
     key: StringKeyOf<T>,
     value: T[StringKeyOf<T>]
   ): Promise<ReactiveModel<T, PK, R>>
   findManyBy(
-    this: ReactiveModelConstructor<T, PK, R>,
+    this: ReactiveModelConstructor<OM, T, PK, R, H>,
     key: StringKeyOf<T>,
     value: Array<T[StringKeyOf<T>]>
   ): Promise<Array<ReactiveModel<T, PK, R>>>
-  first(this: ReactiveModelConstructor<T, PK, R>): Promise<ReactiveModel<T, PK, R> | undefined>
-  firstOrFail(this: ReactiveModelConstructor<T, PK, R>): Promise<ReactiveModel<T, PK, R>>
+  first(
+    this: ReactiveModelConstructor<OM, T, PK, R, H>
+  ): Promise<ReactiveModel<T, PK, R> | undefined>
+  firstOrFail(this: ReactiveModelConstructor<OM, T, PK, R, H>): Promise<ReactiveModel<T, PK, R>>
   firstOrNew(
-    this: ReactiveModelConstructor<T, PK, R>,
+    this: ReactiveModelConstructor<OM, T, PK, R, H>,
     searchPayload: Record<StringKeyOf<T>, unknown>,
     savePayload?: Partial<DataValues<T, PK>>
   ): Promise<ReactiveModel<T, PK, R>>
   firstOrCreate(
-    this: ReactiveModelConstructor<T, PK, R>,
+    this: ReactiveModelConstructor<OM, T, PK, R, H>,
     searchPayload: Record<StringKeyOf<T>, unknown>,
     savePayload?: Partial<DataValues<T, PK>>
   ): Promise<ReactiveModel<T, PK, R>>
   updateOrCreate(
-    this: ReactiveModelConstructor<T, PK, R>,
+    this: ReactiveModelConstructor<OM, T, PK, R, H>,
     searchPayload: Record<StringKeyOf<T>, unknown>,
     savePayload: Partial<DataValues<T, PK>>
   ): Promise<ReactiveModel<T, PK, R>>
   /**
    * Returns all instances of the ReactiveModel.
    */
-  all(this: ReactiveModelConstructor<T, PK, R>): Promise<Array<ReactiveModel<T, PK, R>>>
+  all(this: ReactiveModelConstructor<OM, T, PK, R, H>): Promise<Array<ReactiveModel<T, PK, R>>>
   query(
-    this: ReactiveModelConstructor<T, PK, R>,
-    introspector?: ReactiveQueryBuilderIntrospector<T, PK, R>
-  ): ReactiveQueryBuilder<T, PK, R>
-  truncate(this: ReactiveModelConstructor<T, PK, R>): Promise<void>
+    this: ReactiveModelConstructor<OM, T, PK, R, H>,
+    introspector?: ReactiveQueryBuilderIntrospector<OM, T, PK, R, H>
+  ): ReactiveQueryBuilder<OM, T, PK, R, H>
+  truncate(this: ReactiveModelConstructor<OM, T, PK, R, H>): Promise<void>
 }
 
 export const applyReactiveModelConstructorMixin = <
+  OM extends BaseObjectMap,
   T extends PlainObject,
   PK extends StringKeyOf<T>,
   R extends Record<string, RelationshipConfiguration>,
->(
-  constructor: new (
+  H extends Required<ReactiveDatabaseOptions<OM>['hooks']>,
+  MCtor extends new (
+    initial?: Partial<T>,
+    introspector?: ReactiveModelIntrospector<T, PK, R>
+  ) => any = new (
     initial?: Partial<T>,
     introspector?: ReactiveModelIntrospector<T, PK, R>
   ) => ReactiveModel<T, PK, R>,
+>(
+  constructor: MCtor,
   eventBus: UnifiedEventBus,
   _encryption: Encryption,
   logBus: TypedEventEmitter<LogBusEventMap>,
@@ -1136,14 +1534,15 @@ export const applyReactiveModelConstructorMixin = <
   modelName: string,
   _modelKey: string,
   relatable: StringKeyOf<R>[],
-  addCleanupCallback: (cb: () => Promise<void>) => void
-): ReactiveModelConstructor<T, PK, R> => {
+  addCleanupCallback: (cb: () => Promise<void>) => void,
+  hooks: H
+): MCtor => {
   const reactiveModelName = makeReactiveModelName(modelName)
   const reactiveModelConstructorAbortController = new AbortController()
   addCleanupCallback(async () => {
     reactiveModelConstructorAbortController.abort()
   })
-  const ReactiveModelConstructorMixin: Omit<ReactiveModelConstructor<T, PK, R>, 'new'> = {
+  const ReactiveModelConstructorMixin: Omit<ReactiveModelConstructor<OM, T, PK, R, H>, 'new'> = {
     async create(value) {
       if (reactiveModelConstructorAbortController.signal.aborted) {
         throw new ShutdownDatabaseException()
@@ -1368,8 +1767,9 @@ export const applyReactiveModelConstructorMixin = <
         return []
       }
     },
-    query(introspector?: ReactiveQueryBuilderIntrospector<T, PK, R>) {
-      return new ReactiveQueryBuilder<T, PK, R>(
+    query(introspector?: ReactiveQueryBuilderIntrospector<OM, T, PK, R, H>) {
+      return new ReactiveQueryBuilder<OM, T, PK, R, H>(
+        hooks,
         this,
         table,
         relatable,
@@ -1405,14 +1805,29 @@ export const applyReactiveModelConstructorMixin = <
     },
   }
   Object.assign(constructor, ReactiveModelConstructorMixin)
-  return constructor as ReactiveModelConstructor<T, PK, R>
+  return constructor
 }
+
+// Helper type to infer the return type of wrapReactiveModel if present
+// Otherwise, default to the generated constructor type
+export type MakeReactiveModelReturnType<
+  OM extends BaseObjectMap,
+  K extends StringKeyOf<OM>,
+  PK extends StringKeyOf<OM[K]>,
+  R extends Record<string, RelationshipConfiguration>,
+  H extends Required<ReactiveDatabaseOptions<OM>['hooks']>,
+> = 'wrapReactiveModel' extends keyof H
+  ? H['wrapReactiveModel'] extends (ctor: any) => infer RT
+    ? RT
+    : ReactiveModelConstructor<OM, OM[K], PK, R, H>
+  : ReactiveModelConstructor<OM, OM[K], PK, R, H>
 
 export const makeReactiveModel = <
   OM extends BaseObjectMap,
   K extends StringKeyOf<OM>,
   PK extends StringKeyOf<OM[K]>,
   R extends Record<string, RelationshipConfiguration>,
+  H extends Required<ReactiveDatabaseOptions<OM>['hooks']>,
 >(
   modelKey: K,
   properties: Array<StringKeyOf<OM[K]>>,
@@ -1425,8 +1840,9 @@ export const makeReactiveModel = <
   entityTable: EntityTable<OM[K]>,
   relationships: R,
   addCleanupCallback: (cb: () => Promise<void>) => void,
-  constraints: ModelConstraints<OM[K]> | undefined
-) => {
+  constraints: ModelConstraints<OM[K]> | undefined,
+  hooks: H
+): MakeReactiveModelReturnType<OM, K, PK, R, H> => {
   const name = makeReactiveModelName(String(modelKey))
   const cb = new Function(
     'BaseReactiveModel',
@@ -1446,35 +1862,39 @@ export const makeReactiveModel = <
     'addCleanupCallback',
     'constraints',
     'registerInstance',
+    'hooks',
     `return class ${name} extends BaseReactiveModel {
-          constructor(initial, introspector = undefined) {
-            super(
-                swarm,
-                encryption,
-                logBus,
-                throwError,
-                db,
-                table,
-                properties,
-                primaryKey,
-                modelName,
-                modelKey,
-                relationships,
-                initial,
-                introspector,
-                constraints
-            )
-            addCleanupCallback(this.unref.bind(this))
-            registerInstance(this)
+        constructor(initial, introspector = undefined) {
+          super(
+              swarm,
+              encryption,
+              logBus,
+              throwError,
+              db,
+              table,
+              properties,
+              primaryKey,
+              modelName,
+              modelKey,
+              relationships,
+              initial,
+              introspector,
+              constraints
+          )
+          addCleanupCallback(this.unref.bind(this))
+          registerInstance(this)
+          if (hooks && typeof hooks.wrapReactiveModel === 'function') {
+            return hooks.wrapReactiveModel(this)
           }
+        }
 
-          clone() {
-            const asObject = deserialize(serialize(this.toObject()))
-            delete asObject[primaryKey]
-            const clone = new ${name}(asObject, introspector)
-            return clone
-          }
-        }`
+        clone() {
+          const asObject = deserialize(serialize(this.toObject()))
+          delete asObject[primaryKey]
+          const clone = new ${name}(asObject, introspector)
+          return clone
+        }
+      }`
   )
   const generated = cb(
     BaseReactiveModel,
@@ -1493,10 +1913,11 @@ export const makeReactiveModel = <
     relationships,
     addCleanupCallback,
     constraints,
-    registerInstance
-  ) as unknown as ReactiveModelConstructor<OM[K], PK, R>
+    registerInstance,
+    hooks
+  ) as unknown as ReactiveModelConstructor<OM, OM[K], PK, R, H>
   Object.defineProperty(generated, 'name', { value: name })
-  applyReactiveModelConstructorMixin(
+  applyReactiveModelConstructorMixin<OM, OM[K], PK, R, H>(
     generated,
     swarm,
     encryption,
@@ -1509,9 +1930,11 @@ export const makeReactiveModel = <
     name,
     modelKey,
     Object.keys(relationships) as Array<StringKeyOf<R>>,
-    addCleanupCallback
+    addCleanupCallback,
+    hooks
   )
-  return generated
+  let modelCtor = generated as any
+  return modelCtor as MakeReactiveModelReturnType<OM, K, PK, R, H>
 }
 
 // Instance tracking for all model classes

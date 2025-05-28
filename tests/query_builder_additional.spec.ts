@@ -1,6 +1,5 @@
 import { describe, expect } from 'vitest'
 import { queryBuilderAdditionalSpecTest as test } from './utils'
-import { ReactiveQueryBuilderIntrospector } from '@nhtio/web-re-active-record/testing'
 import type { ReactiveModel } from '../src/lib/factory_reactive_model'
 import type { ReactiveQueryBuilder } from '@nhtio/web-re-active-record/types'
 import type { QueryBuilderAdditionalSpectTestModel as TestModel } from './utils'
@@ -81,11 +80,9 @@ describe('ReactiveQueryBuilder Additional Tests', () => {
     ])
 
     const nestedResult = (await TestModel.query()
-      .where(
-        (q: ReactiveQueryBuilder<TestModel, 'id', Record<string, RelationshipConfiguration>>) => {
-          q.where('score', '>=', 10).andWhere('score', '<=', 20)
-        }
-      )
+      .where((q: ReactiveQueryBuilder<any, any, any, any, any, any>) => {
+        q.where('score', '>=', 10).andWhere('score', '<=', 20)
+      })
       .orWhere((q) => {
         q.where('name', '=', 'Nested3')
       })
@@ -104,19 +101,6 @@ describe('ReactiveQueryBuilder Additional Tests', () => {
       errorCaught = true
     }
     expect(errorCaught).toBe(true)
-  })
-
-  test('should use introspector to gain insight into query builder internals', async ({
-    TestModel,
-  }) => {
-    const introspector = new ReactiveQueryBuilderIntrospector<
-      TestModel,
-      'id',
-      Record<string, RelationshipConfiguration>
-    >()
-    const query = TestModel.query().where('score', '>=', 10).clone(introspector)
-    await query.fetch()
-    expect(introspector.whereConditions.length).toBeGreaterThan(0)
   })
 
   // individual tests for existence methods

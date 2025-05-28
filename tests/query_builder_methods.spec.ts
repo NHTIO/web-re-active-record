@@ -4,8 +4,12 @@ import { ReactiveDatabase } from '../src/lib/class_reactive_database'
 import { makeModelConstraints, joi } from '@nhtio/web-re-active-record/constraints'
 import { ReactiveQueryBuilderIntrospector } from '@nhtio/web-re-active-record/testing'
 import type { PlainObject } from '../src/lib/types'
+import type { ReactiveModel } from '../src/lib/factory_reactive_model'
 import type { RelationshipConfiguration } from '@nhtio/web-re-active-record/relationships'
-import type { ReactiveModel, ReactiveModelConstructor } from '../src/lib/factory_reactive_model'
+import type {
+  InferredReactiveModelConstructor,
+  ReactiveDatabaseOptions,
+} from '@nhtio/web-re-active-record/types'
 
 // Test model interface
 interface TestModel extends PlainObject {
@@ -17,7 +21,11 @@ interface TestModel extends PlainObject {
 // Test fixtures interface
 interface TestFixtures {
   db: ReactiveDatabase<{ test: TestModel }>
-  TestModel: ReactiveModelConstructor<TestModel, 'id', Record<string, RelationshipConfiguration>>
+  TestModel: InferredReactiveModelConstructor<
+    { test: TestModel },
+    ReactiveDatabaseOptions<{ test: TestModel }>,
+    'test'
+  >
 }
 
 // Create database model test with fixtures
@@ -54,13 +62,7 @@ const test = baseTest.extend<TestFixtures>({
   TestModel: [
     async ({ db }, use) => {
       const TestModel = db.model('test')
-      await use(
-        TestModel as ReactiveModelConstructor<
-          TestModel,
-          'id',
-          Record<string, RelationshipConfiguration>
-        >
-      )
+      await use(TestModel)
       await TestModel.truncate()
     },
     {
@@ -232,9 +234,11 @@ describe('ReactiveQueryBuilder Additional Methods', () => {
   test('should handle data modifications', async ({ TestModel }) => {
     const record = await TestModel.create({ name: 'Test1', score: 10 })
     const introspector = new ReactiveQueryBuilderIntrospector<
+      { test: TestModel },
       TestModel,
       'id',
-      Record<string, RelationshipConfiguration>
+      Record<string, RelationshipConfiguration>,
+      any
     >()
     // Test increment
     await TestModel.query().where('id', record.id).increment('score', 5)
@@ -261,7 +265,7 @@ describe('ReactiveQueryBuilder Additional Methods', () => {
       TestModel.create({ name: 'Test2', score: 20 }),
       TestModel.create({ name: 'Test3', score: 30 }),
     ])
-    const query = TestModel.query(introspector)
+    const query = TestModel.query(introspector as any)
     query.where('score', '>', 15).orWhere('name', 'like', 'Test%')
     expect(introspector.whereConditions.length).toBe(2)
     query.clear()

@@ -64,7 +64,10 @@ export type PlainObject = Record<string, unknown>
 /**
  * The shape of the non-primary key properties for a model.
  */
-export type DataValues<T extends PlainObject, PK extends keyof T> = Omit<T, PK>
+export type DataValues<T extends PlainObject, PK extends keyof T> = Pick<
+  T,
+  Exclude<NonMethodKeys<T>, PK>
+>
 
 export interface BaseObjectMap {
   [key: string]: PlainObject

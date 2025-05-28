@@ -1,3 +1,4 @@
+import { enforceTypeOrThrow } from '../src/lib/utils'
 import { ReactiveDatabase } from '../src/lib/class_reactive_database'
 import { describe, it, expect, expectTypeOf, beforeEach, afterEach } from 'vitest'
 import { ReactiveDatabaseIntrospector } from '@nhtio/web-re-active-record/testing'
@@ -6,6 +7,10 @@ import {
   InvalidReactiveDatabaseOptionsError,
   ReactiveDatabaseNoSuchModelException,
 } from '../src/errors'
+import {
+  ReactiveDatabaseOptions,
+  ReactiveDatabaseOptionsSchema,
+} from '../src/lib/class_reactive_database'
 import type { PlainObject } from '../src/lib/types'
 import type { LogBusEventMap } from '../src/lib/class_logger'
 import type { ReactiveDatabaseInitialLoggerOptions } from '../src/lib/class_reactive_database'
@@ -609,6 +614,303 @@ describe('ReactiveDatabase Configuration', () => {
       // Test that partial objects are not valid
       const partialUser = { id: 1, name: 'test' }
       expectTypeOf(partialUser).not.toMatchTypeOf<User>()
+    })
+  })
+
+  describe('Hooks Configuration', () => {
+    it('should accept valid hooks configuration', () => {
+      const introspector = new ReactiveDatabaseIntrospector<{ users: TestUser }>()
+      const db = new ReactiveDatabase<{ users: TestUser }>(
+        {
+          namespace: 'test-db',
+          version: 1,
+          psk: 'test-psk-that-is-long-enough',
+          models: {
+            users: {
+              schema: '++id, name, email',
+              properties: ['id', 'name', 'email'],
+              primaryKey: 'id',
+              relationships: {},
+            },
+          },
+          hooks: {
+            wrapReactiveModel: (model) => model,
+            wrapReactiveQueryCollection: (collection) => collection,
+            wrapReactiveQueryResult: (result) => result,
+          },
+        },
+        introspector
+      )
+      expect(db).toBeInstanceOf(ReactiveDatabase)
+      expect(db.models).toContain('users')
+    })
+
+    it('should throw error for invalid hooks configuration', () => {
+      expect(() => {
+        new ReactiveDatabase<{ users: TestUser }>({
+          namespace: 'test-db',
+          version: 1,
+          psk: 'test-psk-that-is-long-enough',
+          models: {
+            users: {
+              schema: '++id, name, email',
+              properties: ['id', 'name', 'email'],
+              primaryKey: 'id',
+              relationships: {},
+            },
+          },
+          // @ts-expect-error
+          hooks: { wrapReactiveModel: 123 },
+        })
+      }).toThrow(InvalidReactiveDatabaseOptionsError)
+    })
+  })
+
+  describe('Configuration Defaults', () => {
+    const minimalConfig = {
+      namespace: 'test-db',
+      version: 1,
+      psk: 'test-psk-that-is-long-enough',
+      models: {
+        users: {
+          schema: '++id, name, email',
+          properties: ['id', 'name', 'email'],
+          primaryKey: 'id',
+          relationships: {},
+        },
+      },
+    }
+
+    it('should default hooks to identity functions', () => {
+      const opts = { ...minimalConfig }
+      const result = enforceTypeOrThrow<
+        ReactiveDatabaseOptions<any>,
+        InvalidReactiveDatabaseOptionsError
+      >(opts, ReactiveDatabaseOptionsSchema, InvalidReactiveDatabaseOptionsError)
+      expect(result.hooks).toBeDefined()
+      // TypeScript: result.hooks is present due to default, so cast for test
+      const hooks = result.hooks as NonNullable<typeof result.hooks>
+      expect(typeof hooks.wrapReactiveModel).toBe('function')
+      expect(typeof hooks.wrapReactiveQueryCollection).toBe('function')
+      expect(typeof hooks.wrapReactiveQueryResult).toBe('function')
+      // Identity check: use minimal stubs for type safety
+      const fakeModel = { __test: 'model' } as any
+      const fakeCollection = { __test: 'collection' } as any
+      const fakeResult = { __test: 'result' } as any
+      expect(hooks.wrapReactiveModel!(fakeModel)).toBe(fakeModel)
+      expect(hooks.wrapReactiveQueryCollection!(fakeCollection)).toBe(fakeCollection)
+      expect(hooks.wrapReactiveQueryResult!(fakeResult)).toBe(fakeResult)
+    })
+
+    it('should default initial to an object with loggers and subscriptions', () => {
+      const opts = { ...minimalConfig }
+      const result = enforceTypeOrThrow<
+        ReactiveDatabaseOptions<any>,
+        InvalidReactiveDatabaseOptionsError
+      >(opts, ReactiveDatabaseOptionsSchema, InvalidReactiveDatabaseOptionsError)
+      expect(result.initial).toBeDefined()
+      expect(result.initial.loggers).toBeDefined()
+      expect(result.initial.subscriptions).toBeDefined()
+    })
+
+    it('should default initial.loggers to all log levels as empty arrays', () => {
+      const opts = { ...minimalConfig }
+      const result = enforceTypeOrThrow<
+        ReactiveDatabaseOptions<any>,
+        InvalidReactiveDatabaseOptionsError
+      >(opts, ReactiveDatabaseOptionsSchema, InvalidReactiveDatabaseOptionsError)
+      const loggers = result.initial.loggers
+      expect(Array.isArray(loggers.emerg)).toBe(true)
+      expect(Array.isArray(loggers.alert)).toBe(true)
+      expect(Array.isArray(loggers.crit)).toBe(true)
+      expect(Array.isArray(loggers.error)).toBe(true)
+      expect(Array.isArray(loggers.warning)).toBe(true)
+      expect(Array.isArray(loggers.notice)).toBe(true)
+      expect(Array.isArray(loggers.info)).toBe(true)
+      expect(Array.isArray(loggers.debug)).toBe(true)
+      for (const arr of Object.values(loggers)) {
+        expect(arr.length).toBe(0)
+      }
+    })
+
+    it('should default initial.subscriptions to an empty array', () => {
+      const opts = { ...minimalConfig }
+      const result = enforceTypeOrThrow<
+        ReactiveDatabaseOptions<any>,
+        InvalidReactiveDatabaseOptionsError
+      >(opts, ReactiveDatabaseOptionsSchema, InvalidReactiveDatabaseOptionsError)
+      expect(Array.isArray(result.initial.subscriptions)).toBe(true)
+      expect(result.initial.subscriptions.length).toBe(0)
+    })
+
+    it('should default missing hooks properties when only one is provided', () => {
+      const opts = {
+        ...minimalConfig,
+        hooks: {
+          wrapReactiveModel: (model: any) => ({ wrapped: model }),
+        },
+      }
+      const result = enforceTypeOrThrow<
+        ReactiveDatabaseOptions<any>,
+        InvalidReactiveDatabaseOptionsError
+      >(opts, ReactiveDatabaseOptionsSchema, InvalidReactiveDatabaseOptionsError)
+      const hooks = result.hooks as NonNullable<typeof result.hooks>
+      expect(typeof hooks.wrapReactiveModel).toBe('function')
+      expect(typeof hooks.wrapReactiveQueryCollection).toBe('function')
+      expect(typeof hooks.wrapReactiveQueryResult).toBe('function')
+      // Provided hook is used
+      const fakeModel = { foo: 1 }
+      expect(hooks.wrapReactiveModel!(fakeModel)).toEqual({ wrapped: fakeModel })
+      // Others default to identity
+      // Use 'as any' to satisfy type checks for test purposes
+      expect(hooks.wrapReactiveQueryCollection!({} as any)).toEqual({} as any)
+      expect(hooks.wrapReactiveQueryResult!({} as any)).toEqual({} as any)
+    })
+
+    it('should default missing loggers levels when only some are provided', () => {
+      const opts = {
+        ...minimalConfig,
+        initial: {
+          loggers: {
+            error: [() => {}],
+            info: [() => {}],
+          },
+        },
+      }
+      const result = enforceTypeOrThrow<
+        ReactiveDatabaseOptions<any>,
+        InvalidReactiveDatabaseOptionsError
+      >(opts, ReactiveDatabaseOptionsSchema, InvalidReactiveDatabaseOptionsError)
+      const loggers = result.initial.loggers
+      expect(Array.isArray(loggers.error)).toBe(true)
+      expect(Array.isArray(loggers.info)).toBe(true)
+      expect(loggers.error.length).toBe(1)
+      expect(loggers.info.length).toBe(1)
+      // All other levels should be empty arrays
+      const expectedEmpty = ['emerg', 'alert', 'crit', 'warning', 'notice', 'debug']
+      for (const level of expectedEmpty) {
+        expect(Array.isArray((loggers as any)[level])).toBe(true)
+        expect((loggers as any)[level].length).toBe(0)
+      }
+    })
+
+    it('should default initial.subscriptions to an empty array if only loggers is provided', () => {
+      const opts = {
+        ...minimalConfig,
+        initial: {
+          loggers: {
+            error: [() => {}],
+          },
+        },
+      }
+      const result = enforceTypeOrThrow<
+        ReactiveDatabaseOptions<any>,
+        InvalidReactiveDatabaseOptionsError
+      >(opts, ReactiveDatabaseOptionsSchema, InvalidReactiveDatabaseOptionsError)
+      expect(Array.isArray(result.initial.subscriptions)).toBe(true)
+      expect(result.initial.subscriptions.length).toBe(0)
+    })
+
+    it('should default initial.loggers to all levels as empty arrays if only subscriptions is provided', () => {
+      const opts = {
+        ...minimalConfig,
+        initial: {
+          subscriptions: [['error', () => {}]], // Fix: must be [LogLevel, Function] tuple
+        },
+      }
+      const result = enforceTypeOrThrow<
+        ReactiveDatabaseOptions<any>,
+        InvalidReactiveDatabaseOptionsError
+      >(opts, ReactiveDatabaseOptionsSchema, InvalidReactiveDatabaseOptionsError)
+      const loggers = result.initial.loggers
+      for (const arr of Object.values(loggers)) {
+        expect(Array.isArray(arr)).toBe(true)
+        expect(arr.length).toBe(0)
+      }
+    })
+
+    it('should default missing hooks properties to identity functions when only one is provided', () => {
+      const opts = {
+        ...minimalConfig,
+        hooks: {
+          wrapReactiveModel: (model: any) => ({ ...model, wrapped: true }),
+        },
+      }
+      const result = enforceTypeOrThrow<
+        ReactiveDatabaseOptions<any>,
+        InvalidReactiveDatabaseOptionsError
+      >(opts, ReactiveDatabaseOptionsSchema, InvalidReactiveDatabaseOptionsError)
+      const hooks = result.hooks!
+      const fakeModel = { __test: 'model' } as any
+      const fakeCollection = { __test: 'collection' } as any
+      const fakeResult = { __test: 'result' } as any
+      // Provided hook is used
+      expect(hooks.wrapReactiveModel!(fakeModel)).toEqual({ ...fakeModel, wrapped: true })
+      // Others default to identity
+      expect(hooks.wrapReactiveQueryCollection!(fakeCollection)).toBe(fakeCollection)
+      expect(hooks.wrapReactiveQueryResult!(fakeResult)).toBe(fakeResult)
+    })
+
+    it('should default missing logger levels to empty arrays when only some are provided', () => {
+      const opts = {
+        ...minimalConfig,
+        initial: {
+          loggers: {
+            error: [() => {}],
+            info: [() => {}],
+          },
+        },
+      }
+      const result = enforceTypeOrThrow<
+        ReactiveDatabaseOptions<any>,
+        InvalidReactiveDatabaseOptionsError
+      >(opts, ReactiveDatabaseOptionsSchema, InvalidReactiveDatabaseOptionsError)
+      const loggers = result.initial.loggers
+      expect(Array.isArray(loggers.error)).toBe(true)
+      expect(loggers.error.length).toBe(1)
+      expect(Array.isArray(loggers.info)).toBe(true)
+      expect(loggers.info.length).toBe(1)
+      // All other levels should be empty arrays
+      const expectedEmpty = ['emerg', 'alert', 'crit', 'warning', 'notice', 'debug']
+      for (const level of expectedEmpty) {
+        expect(Array.isArray((loggers as any)[level])).toBe(true)
+        expect((loggers as any)[level].length).toBe(0)
+      }
+    })
+
+    it('should default initial.subscriptions to an empty array if only loggers is provided', () => {
+      const opts = {
+        ...minimalConfig,
+        initial: {
+          loggers: {
+            error: [() => {}],
+          },
+        },
+      }
+      const result = enforceTypeOrThrow<
+        ReactiveDatabaseOptions<any>,
+        InvalidReactiveDatabaseOptionsError
+      >(opts, ReactiveDatabaseOptionsSchema, InvalidReactiveDatabaseOptionsError)
+      expect(Array.isArray(result.initial.subscriptions)).toBe(true)
+      expect(result.initial.subscriptions.length).toBe(0)
+    })
+
+    it('should default initial.loggers to all levels as empty arrays if only subscriptions is provided', () => {
+      const opts = {
+        ...minimalConfig,
+        initial: {
+          subscriptions: [['error', () => {}]], // Fix: must be [LogLevel, Function] tuple
+        },
+      }
+      const result = enforceTypeOrThrow<
+        ReactiveDatabaseOptions<any>,
+        InvalidReactiveDatabaseOptionsError
+      >(opts, ReactiveDatabaseOptionsSchema, InvalidReactiveDatabaseOptionsError)
+      const loggers = result.initial.loggers
+      for (const arr of Object.values(loggers)) {
+        expect(Array.isArray(arr)).toBe(true)
+        expect(arr.length).toBe(0)
+      }
     })
   })
 })

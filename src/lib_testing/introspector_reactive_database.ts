@@ -6,8 +6,8 @@ import type { ErrorHandler } from '../lib/class_error_handler'
 import type { ErrorBusEventMap } from '../lib/class_error_handler'
 import type { UnifiedEventBus } from '../lib/class_unified_event_bus'
 import type { TypedEventEmitter, Key } from '@nhtio/tiny-typed-emitter'
-import type { ReactiveModelConstructor } from '../lib/factory_reactive_model'
 import type { ReactiveDatabaseOptions } from '@nhtio/web-re-active-record/types'
+import type { InferredReactiveModelConstructor } from '../lib/factory_reactive_model'
 import type {
   ReActiveDatabaseDexie,
   PlainObject,
@@ -45,10 +45,10 @@ export class ReactiveDatabaseIntrospector<
   /** Function that returns the map of model constructors */
   #models?: () => Map<
     StringKeyOf<ObjectMap>,
-    ReactiveModelConstructor<
-      ObjectMap[StringKeyOf<ObjectMap>],
-      ReactiveDatabaseOptions<ObjectMap>['models'][StringKeyOf<ObjectMap>]['primaryKey'],
-      ReactiveDatabaseOptions<ObjectMap>['models'][StringKeyOf<ObjectMap>]['relationships']
+    InferredReactiveModelConstructor<
+      ObjectMap,
+      ReactiveDatabaseOptions<ObjectMap>,
+      StringKeyOf<ObjectMap>
     >
   >
   /** Function that returns the promise that resolves when the database is ready */
@@ -62,10 +62,10 @@ export class ReactiveDatabaseIntrospector<
   /** Function which makes a model constructor for the specified model */
   #makeModelPrototype?: (
     model: StringKeyOf<ObjectMap>
-  ) => ReactiveModelConstructor<
-    ObjectMap[StringKeyOf<ObjectMap>],
-    ReactiveDatabaseOptions<ObjectMap>['models'][StringKeyOf<ObjectMap>]['primaryKey'],
-    ReactiveDatabaseOptions<ObjectMap>['models'][StringKeyOf<ObjectMap>]['relationships']
+  ) => InferredReactiveModelConstructor<
+    ObjectMap,
+    ReactiveDatabaseOptions<ObjectMap>,
+    StringKeyOf<ObjectMap>
   >
 
   /**
@@ -94,10 +94,10 @@ export class ReactiveDatabaseIntrospector<
     db: () => ReActiveDatabaseDexie<ObjectMap>,
     models: () => Map<
       StringKeyOf<ObjectMap>,
-      ReactiveModelConstructor<
-        ObjectMap[StringKeyOf<ObjectMap>],
-        ReactiveDatabaseOptions<ObjectMap>['models'][StringKeyOf<ObjectMap>]['primaryKey'],
-        ReactiveDatabaseOptions<ObjectMap>['models'][StringKeyOf<ObjectMap>]['relationships']
+      InferredReactiveModelConstructor<
+        ObjectMap,
+        ReactiveDatabaseOptions<ObjectMap>,
+        StringKeyOf<ObjectMap>
       >
     >,
     readyPromise: () => Promise<void>,
@@ -106,10 +106,10 @@ export class ReactiveDatabaseIntrospector<
     $throw: (err: Error) => void,
     $makeModelPrototype: (
       model: StringKeyOf<ObjectMap>
-    ) => ReactiveModelConstructor<
-      ObjectMap[StringKeyOf<ObjectMap>],
-      ReactiveDatabaseOptions<ObjectMap>['models'][StringKeyOf<ObjectMap>]['primaryKey'],
-      ReactiveDatabaseOptions<ObjectMap>['models'][StringKeyOf<ObjectMap>]['relationships']
+    ) => InferredReactiveModelConstructor<
+      ObjectMap,
+      ReactiveDatabaseOptions<ObjectMap>,
+      StringKeyOf<ObjectMap>
     >
   ) {
     if ('undefined' !== typeof this.#options) {

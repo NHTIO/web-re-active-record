@@ -21,7 +21,6 @@ export class UnifiedEventBus extends TypedEventEmitter<ReactiveStateTypedEventMa
     event: K,
     ...args: ReactiveStateTypedEventMap[K]
   ): this {
-    // console.log('UnifiedEventBus.emit', event, args, '\n')
     ;(super.emit as any).call(this, event, ...args)
     ;(this.#swarm.emit as any).call(this.#swarm, event, ...args)
     return this

@@ -19,16 +19,21 @@ import type { ObservabilitySet } from 'dexie'
 import type { LogBusEventMap } from './class_logger'
 import type { ErrorBusEventMap } from './class_error_handler'
 import type { Key, Listener } from '@nhtio/tiny-typed-emitter'
-import type { ReactiveModelConstructor } from './factory_reactive_model'
 import type { ModelConstraints } from '@nhtio/web-re-active-record/constraints'
 import type { RelationshipConfiguration } from '@nhtio/web-re-active-record/relationships'
 import type {
-  ReActiveDatabaseDexie,
-  ReactiveStateTypedEventMap,
   PlainObject,
   DefaultObjectMap,
   StringKeyOf,
+  ReActiveDatabaseDexie,
+  ReactiveStateTypedEventMap,
 } from './types'
+import type {
+  InferredReactiveModelConstructor,
+  WrapReactiveModelHook,
+  WrapReactiveQueryCollectionHook,
+  WrapReactiveQueryResultHook,
+} from '../types'
 
 /**
  * The shape of an initial logger subscription object for the ReactiveDatabase.
@@ -149,9 +154,51 @@ export interface ReactiveDatabaseOptions<
    * @remarks This key should be at least 16 characters long, but it should not be considered "secure" since it is available to anyone who decides to dig deep enough into your code base.
    */
   psk: string
+  /**
+   * Optional hooks for wrapping returned instances for integration with reactive frameworks.
+   *
+   * @property wrapReactiveModel - Hook to wrap every ReactiveModel instance before returning to the user.
+   * @property wrapReactiveQueryCollection - Hook to wrap every ReactiveQueryCollection instance before returning to the user.
+   * @property wrapReactiveQueryResult - Hook to wrap every ReactiveQueryResult instance before returning to the user.
+   *
+   * These hooks allow integration with frameworks such as Vue, Svelte, or others that require reactivity or proxies.
+   * Each hook receives the original instance and must return the wrapped (or original) instance.
+   *
+   * If not provided, each hook defaults to an identity function (returns the original instance).
+   */
+  hooks?: {
+    /**
+     * Hook to wrap every ReactiveModel instance before returning to the user.
+     */
+    wrapReactiveModel?: WrapReactiveModelHook<
+      ObjectMap[StringKeyOf<ObjectMap>],
+      // Primary key type for the model
+      ReactiveDatabaseModelDefinition<ObjectMap[StringKeyOf<ObjectMap>]>['primaryKey'],
+      // Relationships config for the model
+      ReactiveDatabaseModelDefinition<ObjectMap[StringKeyOf<ObjectMap>]>['relationships']
+    >
+    /**
+     * Hook to wrap every ReactiveQueryCollection instance before returning to the user.
+     */
+    wrapReactiveQueryCollection?: WrapReactiveQueryCollectionHook<
+      ObjectMap[StringKeyOf<ObjectMap>],
+      ReactiveDatabaseModelDefinition<ObjectMap[StringKeyOf<ObjectMap>]>['primaryKey'],
+      ReactiveDatabaseModelDefinition<ObjectMap[StringKeyOf<ObjectMap>]>['relationships'],
+      any
+    >
+    /**
+     * Hook to wrap every ReactiveQueryResult instance before returning to the user.
+     */
+    wrapReactiveQueryResult?: WrapReactiveQueryResultHook<
+      ObjectMap[StringKeyOf<ObjectMap>],
+      ReactiveDatabaseModelDefinition<ObjectMap[StringKeyOf<ObjectMap>]>['primaryKey'],
+      ReactiveDatabaseModelDefinition<ObjectMap[StringKeyOf<ObjectMap>]>['relationships'],
+      any
+    >
+  }
 }
 
-const ReactiveDatabaseOptionsSchema = joi.object({
+export const ReactiveDatabaseOptionsSchema = joi.object({
   initial: joi
     .object({
       loggers: joi
@@ -252,6 +299,29 @@ const ReactiveDatabaseOptionsSchema = joi.object({
     )
     .required(),
   psk: joi.string().required().min(16),
+  hooks: joi
+    .object({
+      wrapReactiveModel: joi
+        .function()
+        .arity(1)
+        .optional()
+        .default(() => (model: any) => model),
+      wrapReactiveQueryCollection: joi
+        .function()
+        .arity(1)
+        .optional()
+        .default(() => (model: any) => model),
+      wrapReactiveQueryResult: joi
+        .function()
+        .arity(1)
+        .optional()
+        .default(() => (model: any) => model),
+    })
+    .default({
+      wrapReactiveModel: (model: any) => model,
+      wrapReactiveQueryCollection: (collection: any) => collection,
+      wrapReactiveQueryResult: (result: any) => result,
+    }),
 })
 
 const knownReactiveDatabases = new Set<ReactiveDatabase<any>>()
@@ -273,10 +343,10 @@ export class ReactiveDatabase<ObjectMap extends Record<string, PlainObject> = De
   readonly #db: ReActiveDatabaseDexie<ObjectMap>
   readonly #models: Map<
     StringKeyOf<ObjectMap>,
-    ReactiveModelConstructor<
-      ObjectMap[StringKeyOf<ObjectMap>],
-      ReactiveDatabaseOptions<ObjectMap>['models'][StringKeyOf<ObjectMap>]['primaryKey'],
-      ReactiveDatabaseOptions<ObjectMap>['models'][StringKeyOf<ObjectMap>]['relationships']
+    InferredReactiveModelConstructor<
+      ObjectMap,
+      ReactiveDatabaseOptions<ObjectMap>,
+      StringKeyOf<ObjectMap>
     >
   >
   readonly #readyPromise: Promise<void>
@@ -479,7 +549,8 @@ export class ReactiveDatabase<ObjectMap extends Record<string, PlainObject> = De
       this.#db[model] as any,
       this.#options.models[model].relationships,
       this.#addCleanupCallback.bind(this),
-      this.#options.models[model].constraints
+      this.#options.models[model].constraints,
+      this.#options.hooks! as Required<ReactiveDatabaseOptions<ObjectMap>['hooks']>
     )
     this.#log('info', `Model ${String(model)} registered successfully`)
     return modelPrototype
@@ -531,17 +602,13 @@ export class ReactiveDatabase<ObjectMap extends Record<string, PlainObject> = De
    */
   model<K extends StringKeyOf<ObjectMap>>(
     model: K
-  ): ReactiveModelConstructor<
-    ObjectMap[K],
-    ReactiveDatabaseOptions<ObjectMap>['models'][K]['primaryKey'],
-    ReactiveDatabaseOptions<ObjectMap>['models'][K]['relationships']
-  > {
+  ): InferredReactiveModelConstructor<ObjectMap, ReactiveDatabaseOptions<ObjectMap>, K> {
     const modelConstructor = this.#models.get(model)
     if (modelConstructor) {
-      return modelConstructor as unknown as ReactiveModelConstructor<
-        ObjectMap[K],
-        ReactiveDatabaseOptions<ObjectMap>['models'][K]['primaryKey'],
-        ReactiveDatabaseOptions<ObjectMap>['models'][K]['relationships']
+      return modelConstructor as unknown as InferredReactiveModelConstructor<
+        ObjectMap,
+        ReactiveDatabaseOptions<ObjectMap>,
+        K
       >
     } else {
       throw new ReactiveDatabaseNoSuchModelException(model)

@@ -64,7 +64,7 @@ export type ReactiveQueryResponseEventMap<T = any> = EventMap<ReactiveQueryRespo
 export abstract class ReactiveQueryResponse<T = any> extends TypedEventEmitter<
   ReactiveQueryResponseEventMap<T>
 > {
-  readonly #query: ReactiveQueryBuilder<any, any, any>
+  readonly #query: ReactiveQueryBuilder<any, any, any, any, any>
   readonly #model: string
   // @ts-ignore
   readonly #primaryKey: string
@@ -95,7 +95,7 @@ export abstract class ReactiveQueryResponse<T = any> extends TypedEventEmitter<
    * @private
    */
   constructor(
-    query: ReactiveQueryBuilder<any, any, any>,
+    query: ReactiveQueryBuilder<any, any, any, any, any>,
     model: string,
     primaryKey: string,
     bus: UnifiedEventBus,
@@ -136,6 +136,16 @@ export abstract class ReactiveQueryResponse<T = any> extends TypedEventEmitter<
     this.#boundOnDeleted = this.#onDeleted.bind(this)
     this.#bus.on('reactivemodel:saved', this.#boundOnSaved)
     this.#bus.on('reactivemodel:deleted', this.#boundOnDeleted)
+    Object.defineProperty(this, 'value', {
+      get: () => {
+        if (!this.#queryHasRun) {
+          throw new ReactiveQueryResponsePendingValueException()
+        }
+        return this.#value as T
+      },
+      enumerable: true,
+      configurable: false,
+    })
     addCleanupCallback(async () => {
       this.unmount()
     })
@@ -233,12 +243,7 @@ export abstract class ReactiveQueryResponse<T = any> extends TypedEventEmitter<
    *
    * @throws {ReactiveQueryResponsePendingValueException} If the query has not yet run.
    */
-  get value(): T {
-    if (!this.#queryHasRun) {
-      throw new ReactiveQueryResponsePendingValueException()
-    }
-    return this.#value as T
-  }
+  declare value: T
 
   /**
    * Unmounts the response, aborting any in-flight requests, unsubscribing from all events,

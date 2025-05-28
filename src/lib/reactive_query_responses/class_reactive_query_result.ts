@@ -2,6 +2,7 @@ import { ReactiveQueryResponse } from './common'
 import type { PlainObject, StringKeyOf } from '../types'
 import type { ReactiveModel } from '../factory_reactive_model'
 import type { UnifiedEventBus } from '../class_unified_event_bus'
+import type { ReactiveDatabaseOptions } from '../class_reactive_database'
 import type { ReactiveQueryBuilder } from '../class_reactive_query_builder'
 import type { RelationshipConfiguration } from '@nhtio/web-re-active-record/relationships'
 
@@ -31,6 +32,7 @@ export class ReactiveQueryResult<
   T extends PlainObject,
   PK extends StringKeyOf<T>,
   R extends Record<string, RelationshipConfiguration>,
+  H extends Required<ReactiveDatabaseOptions['hooks']>,
   M = ReactiveModel<T, PK, R>,
 > extends ReactiveQueryResponse<M | undefined> {
   /**
@@ -46,14 +48,23 @@ export class ReactiveQueryResult<
    * @private
    */
   constructor(
-    query: ReactiveQueryBuilder<T, PK, R>,
+    query: ReactiveQueryBuilder<any, T, PK, R, H>,
     model: string,
     primaryKey: PK,
     bus: UnifiedEventBus,
     evaluateWhere: (item: any) => boolean,
     addCleanupCallback: (cb: () => Promise<void>) => void,
-    resolve: () => void
+    resolve: () => void,
+    hooks: H
   ) {
     super(query, model, primaryKey, bus, evaluateWhere, addCleanupCallback, resolve)
+    if (
+      'object' === typeof hooks &&
+      hooks !== null &&
+      'wrapReactiveQueryResult' in hooks &&
+      typeof hooks.wrapReactiveQueryResult === 'function'
+    ) {
+      return hooks.wrapReactiveQueryResult(this)
+    }
   }
 }

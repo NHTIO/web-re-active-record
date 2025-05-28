@@ -85,7 +85,7 @@ export const enforceTypeOrThrow = <T, E extends ReActiveRecordValidationError>(
   if (res instanceof joi.ValidationError) {
     throw new error(res)
   }
-  return res as T
+  return res as Required<T>
 }
 
 export { string }

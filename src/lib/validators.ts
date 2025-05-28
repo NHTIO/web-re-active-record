@@ -9,6 +9,11 @@ import {
   MorphOne,
   MorphTo,
 } from '@nhtio/web-re-active-record/relationships'
+import type {
+  WrapReactiveModelHook,
+  WrapReactiveQueryCollectionHook,
+  WrapReactiveQueryResultHook,
+} from '../types'
 
 /**
  * Custom validator for Dexie store schema
@@ -176,3 +181,22 @@ export const relationshipConfig = joi.array().custom((value, helpers) => {
   }
   return helpers.error('any.invalid', { message: 'Unexpected relationship tuple shape' })
 }, 'Relationship configuration validation')
+
+export const hooksSchema = joi
+  .object({
+    wrapReactiveModel: joi.function().arity(1).optional(),
+    wrapReactiveQueryCollection: joi.function().arity(1).optional(),
+    wrapReactiveQueryResult: joi.function().arity(1).optional(),
+  })
+  .default({
+    wrapReactiveModel: ((model: any) => model) as WrapReactiveModelHook<any, any, any, any>,
+    wrapReactiveQueryCollection: ((collection: any) =>
+      collection) as WrapReactiveQueryCollectionHook<any, any, any, any, any>,
+    wrapReactiveQueryResult: ((result: any) => result) as WrapReactiveQueryResultHook<
+      any,
+      any,
+      any,
+      any,
+      any
+    >,
+  })

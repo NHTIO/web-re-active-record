@@ -2,8 +2,11 @@ import { string } from '../src/lib/utils'
 import { test as baseTest } from 'vitest'
 import { ReactiveDatabase } from '@nhtio/web-re-active-record'
 import { makeModelConstraints, joi } from '@nhtio/web-re-active-record/constraints'
-import type { RelationshipConfiguration } from '@nhtio/web-re-active-record/relationships'
-import type { PlainObject, ReactiveModelConstructor } from '@nhtio/web-re-active-record/types'
+import type {
+  PlainObject,
+  InferredReactiveModelConstructor,
+  ReactiveDatabaseOptions,
+} from '@nhtio/web-re-active-record/types'
 
 export interface QueryBuilderAdditionalSpectTestModel extends PlainObject {
   id: number
@@ -16,10 +19,12 @@ export interface QueryBuilderAdditionalSpectTestModel extends PlainObject {
 
 export interface QueryBuilderAdditionalSpectTestFixtures {
   db: ReactiveDatabase<{ test: QueryBuilderAdditionalSpectTestModel }>
-  TestModel: ReactiveModelConstructor<
-    QueryBuilderAdditionalSpectTestModel,
-    'id',
-    Record<string, RelationshipConfiguration>
+  TestModel: InferredReactiveModelConstructor<
+    { test: QueryBuilderAdditionalSpectTestModel },
+    ReactiveDatabaseOptions<{
+      test: QueryBuilderAdditionalSpectTestModel
+    }>,
+    'test'
   >
 }
 
@@ -61,13 +66,7 @@ export const queryBuilderAdditionalSpecTest =
     TestModel: [
       async ({ db }, use) => {
         const TestModel = db.model('test')
-        await use(
-          TestModel as ReactiveModelConstructor<
-            QueryBuilderAdditionalSpectTestModel,
-            'id',
-            Record<string, RelationshipConfiguration>
-          >
-        )
+        await use(TestModel)
         await TestModel.truncate()
       },
       {
@@ -83,10 +82,12 @@ export interface QueryBuilderBooleanColumnSpecTestModel extends PlainObject {
 
 export interface QueryBuilderBooleanColumnSpecTestFixtures {
   db: ReactiveDatabase<{ test: QueryBuilderBooleanColumnSpecTestModel }>
-  TestModel: ReactiveModelConstructor<
-    QueryBuilderBooleanColumnSpecTestModel,
-    'id',
-    Record<string, RelationshipConfiguration>
+  TestModel: InferredReactiveModelConstructor<
+    { test: QueryBuilderBooleanColumnSpecTestModel },
+    ReactiveDatabaseOptions<{
+      test: QueryBuilderBooleanColumnSpecTestModel
+    }>,
+    'test'
   >
 }
 
@@ -123,13 +124,7 @@ export const queryBuilderBooleanColumnSpecTestTest =
     TestModel: [
       async ({ db }, use) => {
         const TestModel = db.model('test')
-        await use(
-          TestModel as ReactiveModelConstructor<
-            QueryBuilderBooleanColumnSpecTestModel,
-            'id',
-            Record<string, RelationshipConfiguration>
-          >
-        )
+        await use(TestModel)
         await TestModel.truncate()
       },
       {

@@ -1,8 +1,9 @@
 import { ERROR_CANNOT_REINITIALIZE, ERROR_CANNOT_ACCESS_BEFORE_INITIALIZATION } from './common'
 import type { EntityTable } from 'dexie'
 import type { LogBusEventMap } from '../lib/class_logger'
-import type { PlainObject, StringKeyOf } from '../lib/types'
 import type { TypedEventEmitter, Key } from '@nhtio/tiny-typed-emitter'
+import type { PlainObject, StringKeyOf, BaseObjectMap } from '../lib/types'
+import type { ReactiveDatabaseOptions } from '../lib/class_reactive_database'
 import type { RelationshipConfiguration } from '@nhtio/web-re-active-record/relationships'
 import type { ReactiveModelConstructor, ReactiveModel } from '../lib/factory_reactive_model'
 import type {
@@ -19,16 +20,18 @@ import type {
  * @typeParam R - The type of the relationship configurations
  */
 export class ReactiveQueryBuilderIntrospector<
+  OM extends BaseObjectMap,
   T extends PlainObject,
   PK extends StringKeyOf<T>,
   R extends Record<string, RelationshipConfiguration>,
+  H extends Required<ReactiveDatabaseOptions<any>['hooks']>,
 > {
   /** @private Query builder clauses accessor */
   #clauses?: () => ReactiveQueryBuilderClause[]
   /** @private Query builder where conditions */
   #whereConditions?: () => WhereCondition<T>[]
   /** @private Model constructor accessor */
-  #ctor?: () => ReactiveModelConstructor<T, PK, R>
+  #ctor?: () => ReactiveModelConstructor<OM, T, PK, R, H>
   /** @private Available relationship names accessor */
   #relatable?: () => StringKeyOf<R>[]
   /** @private Database table accessor */
@@ -73,7 +76,7 @@ export class ReactiveQueryBuilderIntrospector<
   $init(
     clauses: () => ReactiveQueryBuilderClause[],
     whereConditions: () => WhereCondition<T>[],
-    ctor: () => ReactiveModelConstructor<T, PK, R>,
+    ctor: () => ReactiveModelConstructor<OM, T, PK, R, H>,
     relatable: () => StringKeyOf<R>[],
     table: () => EntityTable<T>,
     primaryKey: () => PK,
