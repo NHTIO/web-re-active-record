@@ -1,10 +1,7 @@
 import { Subject, Subscription } from 'rxjs'
 import { serialize } from '@nhtio/web-serialization'
 import { TypedEventEmitter } from '@nhtio/tiny-typed-emitter'
-import {
-  ReactiveQueryResponsePendingValueException,
-  ReactiveQueryResponseOperationException,
-} from '@nhtio/web-re-active-record/errors'
+import { ReactiveQueryResponseOperationException } from '@nhtio/web-re-active-record/errors'
 import type { EventMap } from '@nhtio/tiny-typed-emitter'
 import type { UnifiedEventBus } from '../class_unified_event_bus'
 import type { ReactiveQueryBuilder } from '../class_reactive_query_builder'
@@ -38,6 +35,9 @@ export interface ReactiveQueryResponseEvents<T = any> {
  * @interface
  */
 export type ReactiveQueryResponseEventMap<T = any> = EventMap<ReactiveQueryResponseEvents<T>>
+
+export interface ReactiveQueryResponseInterface<T = any>
+  extends TypedEventEmitter<ReactiveQueryResponseEventMap<T>> {}
 
 /**
  * Provides a reactive, observable response to a query, automatically re-fetching results
@@ -76,7 +76,6 @@ export abstract class ReactiveQueryResponse<T = any> extends TypedEventEmitter<
   readonly #abortControllers: Set<AbortController>
   readonly #resolve: () => void
   #value: T | undefined
-  #queryHasRun: boolean
   #unmounted: boolean
   // Add private fields for bound handlers
   #boundOnSaved?: (modelName: string, _pk: string, values: any) => void
@@ -126,7 +125,6 @@ export abstract class ReactiveQueryResponse<T = any> extends TypedEventEmitter<
         super.emit('complete')
       },
     })
-    this.#queryHasRun = false
     this.#unmounted = false
     this.#resolve = resolve
     this.#next()
@@ -138,9 +136,6 @@ export abstract class ReactiveQueryResponse<T = any> extends TypedEventEmitter<
     this.#bus.on('reactivemodel:deleted', this.#boundOnDeleted)
     Object.defineProperty(this, 'value', {
       get: () => {
-        if (!this.#queryHasRun) {
-          throw new ReactiveQueryResponsePendingValueException()
-        }
         return this.#value as T
       },
       enumerable: true,
@@ -231,7 +226,6 @@ export abstract class ReactiveQueryResponse<T = any> extends TypedEventEmitter<
       }
     } finally {
       if (!abortController.signal.aborted) {
-        this.#queryHasRun = true
         this.#resolve()
       }
       this.#abortControllers.delete(abortController)

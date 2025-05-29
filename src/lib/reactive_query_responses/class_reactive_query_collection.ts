@@ -1,6 +1,7 @@
 import { ReactiveQueryResponse } from './common'
 import type { PlainObject, StringKeyOf } from '../types'
 import type { ReactiveModel } from '../factory_reactive_model'
+import type { ReactiveQueryResponseInterface } from './common'
 import type { UnifiedEventBus } from '../class_unified_event_bus'
 import type { ReactiveDatabaseOptions } from '../class_reactive_database'
 import type { ReactiveQueryBuilder } from '../class_reactive_query_builder'
@@ -29,12 +30,15 @@ import type { RelationshipConfiguration } from '@nhtio/web-re-active-record/rela
  * response.unmount()
  */
 export class ReactiveQueryCollection<
-  T extends PlainObject,
-  PK extends StringKeyOf<T>,
-  R extends Record<string, RelationshipConfiguration>,
-  H extends Required<ReactiveDatabaseOptions['hooks']>,
-  M extends ReactiveModel<T, PK, R> = ReactiveModel<T, PK, R>,
-> extends ReactiveQueryResponse<Array<M>> {
+    T extends PlainObject,
+    PK extends StringKeyOf<T>,
+    R extends Record<string, RelationshipConfiguration>,
+    H extends Required<ReactiveDatabaseOptions['hooks']>,
+    M extends ReactiveModel<T, PK, R> = ReactiveModel<T, PK, R>,
+  >
+  extends ReactiveQueryResponse<Array<M>>
+  implements ReactiveQueryResponseInterface<Array<M>>
+{
   /**
    * Constructs a new ReactiveQueryCollection.
    *
