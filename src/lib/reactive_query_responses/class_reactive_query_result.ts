@@ -6,6 +6,7 @@ import type { UnifiedEventBus } from '../class_unified_event_bus'
 import type { ReactiveDatabaseOptions } from '../class_reactive_database'
 import type { ReactiveQueryBuilder } from '../class_reactive_query_builder'
 import type { RelationshipConfiguration } from '@nhtio/web-re-active-record/relationships'
+import type { ReactiveQueryResultAgumentations } from '@nhtio/web-re-active-record/augmentable'
 
 /**
  * Provides a reactive, observable response for a query that returns a single model instance or undefined.
@@ -37,7 +38,7 @@ export class ReactiveQueryResult<
     M = ReactiveModel<T, PK, R>,
   >
   extends ReactiveQueryResponse<M | undefined>
-  implements ReactiveQueryResponseInterface<M | undefined>
+  implements ReactiveQueryResponseInterface<M | undefined>, ReactiveQueryResultAgumentations
 {
   /**
    * Constructs a new ReactiveQueryResult.

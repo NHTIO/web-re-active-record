@@ -22,6 +22,8 @@ export interface ReactiveStateTypedEventMap extends SwarmEventMap {
   'reactivemodel:saved': [string, string, Serializable]
   /** model, primary key */
   'reactivemodel:deleted': [string, string]
+  /** model */
+  'reactivemodel:truncated': [string]
   /** part */
   'reactivedatabase:storagemutated': [ObservabilitySet]
 }

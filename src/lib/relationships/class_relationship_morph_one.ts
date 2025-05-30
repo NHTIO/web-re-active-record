@@ -194,6 +194,7 @@ export class MorphOne<
     }
     if ('function' === typeof this.#boundOnSwarmDeleted) {
       this.$swarm.off('reactivemodel:deleted', this.#boundOnSwarmDeleted)
+      this.$swarm.off('reactivemodel:truncated', this.#boundOnSwarmDeleted)
     }
     if (this.#hasHookedForeignKeyWatcher && 'undefined' !== typeof this.value) {
       this.value.offChange(this.#boundNextRelatedChange)
@@ -266,6 +267,7 @@ export class MorphOne<
     }
     if (this.#boundOnSwarmDeleted) {
       this.$swarm.off('reactivemodel:deleted', this.#boundOnSwarmDeleted)
+      this.$swarm.off('reactivemodel:truncated', this.#boundOnSwarmDeleted)
     }
 
     // Reset state

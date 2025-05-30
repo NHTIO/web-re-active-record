@@ -29,6 +29,7 @@ import type { ReactiveDatabase } from './class_reactive_database'
 import type { TypedEventEmitter } from '@nhtio/tiny-typed-emitter'
 import type { ReactiveDatabaseOptions } from './class_reactive_database'
 import type { ModelConstraints } from '@nhtio/web-re-active-record/constraints'
+import type { ReactiveModelAgumentations } from '@nhtio/web-re-active-record/augmentable'
 import type { ReactiveQueryBuilderIntrospector } from '@nhtio/web-re-active-record/testing'
 import type { ReactiveModelChangeEmitterEventMap } from './class_reactive_model_change_emitter'
 import type { PlainObject, DataValues, BaseObjectMap, StringKeyOf, RelatedValueMap } from './types'
@@ -459,6 +460,7 @@ export abstract class BaseReactiveModel<
     this.#boundOnReactiveModelDeletedInSwarm = this.#onReactiveModelDeletedInSwarm.bind(this)
     this.#swarm.on('reactivemodel:saved', this.#boundOnReactiveModelUpdatedInSwarm)
     this.#swarm.on('reactivemodel:deleted', this.#boundOnReactiveModelDeletedInSwarm)
+    this.#swarm.on('reactivemodel:truncated', this.#boundOnReactiveModelDeletedInSwarm)
     if (introspector instanceof ReactiveModelIntrospector) {
       introspector.$init(
         () => this.#swarm,
@@ -489,8 +491,9 @@ export abstract class BaseReactiveModel<
 
   /**
    * A boolean indicating whether the model has been deleted.
+   * @category Properties
    */
-  get deleted() {
+  get $deleted() {
     return this.#deleted
   }
 
@@ -518,9 +521,13 @@ export abstract class BaseReactiveModel<
     this.#doEmitChanges()
   }
 
-  #onReactiveModelDeletedInSwarm(modelName: string, instanceKey: string) {
+  #onReactiveModelDeletedInSwarm(modelName: string, instanceKey?: string) {
     if (this.#modelName !== modelName) return
-    if (String(this.#state.get(this.#primaryKey)) !== instanceKey) return
+    if (
+      'string' === typeof instanceKey &&
+      String(this.#state.get(this.#primaryKey)) !== instanceKey
+    )
+      return
     this.#logBus.emit('debug', `Got delete for ${this.#modelName} ${instanceKey} from swarm`)
     this.#deleted = true
     this.#emitter.clear()
@@ -545,7 +552,7 @@ export abstract class BaseReactiveModel<
   }
 
   #setProperty<P extends StringKeyOf<T>>(prop: P, value: T[P]): void {
-    if (this.deleted) {
+    if (this.$deleted) {
       throw new ReactiveModelDeletedException()
     }
     if (!this.#properties.includes(prop)) {
@@ -586,7 +593,7 @@ export abstract class BaseReactiveModel<
     if (!this.#constraints) return
     let constraints = this.#constraints
     const toValidate: any = {}
-    if (!this.key) {
+    if (!this.$key) {
       const propertiesToValidate = this.#properties.filter((prop) => prop !== this.#primaryKey)
       const extracted: any = {}
       propertiesToValidate.forEach((prop) => {
@@ -625,7 +632,7 @@ export abstract class BaseReactiveModel<
    * The value of the primary key for the instance of the model.
    * @category Properties
    */
-  get key(): PK {
+  get $key(): PK {
     return this.#getProperty(this.#primaryKey) as PK
   }
 
@@ -633,14 +640,14 @@ export abstract class BaseReactiveModel<
    * An object containing all of the pending changes to be made to the model
    * @category Properties
    */
-  get pending(): PendingStateChanges<T> {
+  get $pending(): PendingStateChanges<T> {
     const ret: PendingStateChanges<T> = {}
     this.#pending.forEach((value, key) => {
       const current = this.#state.get(key)
-      if (current !== value || !this.key) {
+      if (current !== value || !this.$key) {
         ret[key as StringKeyOf<T>] = {
           is: value,
-          was: !this.key ? undefined : current,
+          was: !this.$key ? undefined : current,
         }
       }
     })
@@ -652,8 +659,8 @@ export abstract class BaseReactiveModel<
    * A boolean indicating whether the model has any pending changes.
    * @category Properties
    */
-  get dirty(): boolean {
-    return Object.keys(this.pending).length > 0
+  get $dirty(): boolean {
+    return Object.keys(this.$pending).length > 0
   }
 
   /**
@@ -663,7 +670,7 @@ export abstract class BaseReactiveModel<
    * @category Methods
    */
   #fill(value: Partial<DataValues<T, PK>>): this {
-    if (this.deleted) {
+    if (this.$deleted) {
       throw new ReactiveModelDeletedException()
     }
     for (const key of this.#properties) {
@@ -692,7 +699,7 @@ export abstract class BaseReactiveModel<
    * @category Methods
    */
   #merge(value: Partial<DataValues<T, PK>>): this {
-    if (this.deleted) {
+    if (this.$deleted) {
       throw new ReactiveModelDeletedException()
     }
     for (const key of this.#properties) {
@@ -719,13 +726,13 @@ export abstract class BaseReactiveModel<
    * @category Methods
    */
   async #save(): Promise<this> {
-    if (this.deleted) {
+    if (this.$deleted) {
       throw new ReactiveModelDeletedException()
     }
     this.#doConstraintValidation()
     const toUpdate: any = {}
     this.#properties.forEach((prop) => {
-      if ('undefined' !== typeof this.key || prop !== this.#primaryKey) {
+      if ('undefined' !== typeof this.$key || prop !== this.#primaryKey) {
         let value = this.#pending.get(prop)
         if ('undefined' === typeof value) {
           value = this.#state.get(prop)
@@ -736,7 +743,7 @@ export abstract class BaseReactiveModel<
       }
     })
     // If we are saving for the first time, we need to ensure that all of the properties exist on the object, otherwise we need to throw an error
-    if (!this.key) {
+    if (!this.$key) {
       const missing: Array<StringKeyOf<T>> = []
       for (const key of this.#properties) {
         // check for missing required properties
@@ -764,15 +771,15 @@ export abstract class BaseReactiveModel<
     let res: T
     let pk: T[PK] | undefined
     try {
-      if (!this.key) {
+      if (!this.$key) {
         this.#logBus.emit('debug', `Creating ${this.#modelName}`, toUpdate)
         pk = await this.#table.add(toUpdate as any)
         this.#logBus.emit('debug', `Got primary key ${pk}`)
         res = (await this.#table.get(pk as any)) as any
         this.#logBus.emit('debug', `Created ${this.#modelName} ${pk}`, toUpdate)
       } else {
-        res = await this.#table.put(toUpdate as any, this.key as any)
-        this.#logBus.emit('debug', `Updated ${this.#modelName} ${this.key}`, toUpdate)
+        res = await this.#table.put(toUpdate as any, this.$key as any)
+        this.#logBus.emit('debug', `Updated ${this.#modelName} ${this.$key}`, toUpdate)
       }
     } catch (e) {
       this.#logBus.emit('error', `Error saving ${this.#modelName}`, e)
@@ -781,7 +788,7 @@ export abstract class BaseReactiveModel<
       }
       throw new ReactiveModelQueryException(e)
     }
-    if (res && !this.key) {
+    if (res && !this.$key) {
       this.#state.set(this.#primaryKey, res[this.#primaryKey])
     }
     this.#pending.forEach((value, key) => {
@@ -795,7 +802,7 @@ export abstract class BaseReactiveModel<
         withEncryptedValues[key] = this.#encryption.encrypt(value)
       }
     }
-    this.#swarm.emit('reactivemodel:saved', this.#modelName, String(this.key), withEncryptedValues)
+    this.#swarm.emit('reactivemodel:saved', this.#modelName, String(this.$key), withEncryptedValues)
     this.#doEmitChanges()
     return this
   }
@@ -808,15 +815,15 @@ export abstract class BaseReactiveModel<
    * @category Methods
    */
   async #delete(): Promise<this> {
-    if (!this.key) {
+    if (!this.$key) {
       return this
     }
-    if (this.deleted) {
+    if (this.$deleted) {
       return this
     }
-    await this.#table.delete(this.key as any)
+    await this.#table.delete(this.$key as any)
     this.#deleted = true
-    this.#swarm.emit('reactivemodel:deleted', this.#modelName, String(this.key))
+    this.#swarm.emit('reactivemodel:deleted', this.#modelName, String(this.$key))
     this.#doEmitChanges()
     this.#emitter.clear()
     return this
@@ -827,7 +834,7 @@ export abstract class BaseReactiveModel<
    * @category Methods
    */
   #reset() {
-    if (this.deleted) {
+    if (this.$deleted) {
       throw new ReactiveModelDeletedException()
     }
     this.#pending.clear()
@@ -886,7 +893,7 @@ export abstract class BaseReactiveModel<
    * @category Methods
    */
   async #related<P extends StringKeyOf<R>>(relationship: P): Promise<RelatedValueMap<R>[P]> {
-    if (this.deleted) {
+    if (this.$deleted) {
       throw new ReactiveModelDeletedException()
     }
     if (!this.#relationships[relationship]) {
@@ -906,7 +913,7 @@ export abstract class BaseReactiveModel<
    * @category Methods
    */
   async #load(relationship: StringKeyOf<R>) {
-    if (this.deleted) {
+    if (this.$deleted) {
       throw new ReactiveModelDeletedException()
     }
     if (!this.#relationships[relationship]) {
@@ -925,7 +932,7 @@ export abstract class BaseReactiveModel<
    * @category Methods
    */
   async #loadMany(relationships: Array<StringKeyOf<R>>) {
-    if (this.deleted) {
+    if (this.$deleted) {
       throw new ReactiveModelDeletedException()
     }
     await Promise.all(relationships.map((relationship) => this.#load(relationship)))
@@ -939,7 +946,7 @@ export abstract class BaseReactiveModel<
    * @category Methods
    */
   #onChange(listener: Listener<'change', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any): this {
-    if (this.deleted) {
+    if (this.$deleted) {
       throw new ReactiveModelUnsubscribableException()
     }
     this.#emitter.onChange(listener, ctx)
@@ -954,7 +961,7 @@ export abstract class BaseReactiveModel<
    * @category Methods
    */
   #onDelta(listener: Listener<'delta', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any): this {
-    if (this.deleted) {
+    if (this.$deleted) {
       throw new ReactiveModelUnsubscribableException()
     }
     this.#emitter.onDelta(listener, ctx)
@@ -974,7 +981,7 @@ export abstract class BaseReactiveModel<
     listener: Listener<`change:${string}`, ReactiveModelChangeEmitterEventMap<T>>,
     ctx?: any
   ): this {
-    if (this.deleted) {
+    if (this.$deleted) {
       throw new ReactiveModelUnsubscribableException()
     }
     this.#emitter.onPropertyChange(key as any, listener, ctx)
@@ -992,7 +999,7 @@ export abstract class BaseReactiveModel<
     listener: Listener<'change', ReactiveModelChangeEmitterEventMap<T>>,
     ctx?: any
   ): this {
-    if (this.deleted) {
+    if (this.$deleted) {
       throw new ReactiveModelUnsubscribableException()
     }
     this.#emitter.onceChange(listener, ctx)
@@ -1007,7 +1014,7 @@ export abstract class BaseReactiveModel<
    * @category Methods
    */
   #onceDelta(listener: Listener<'delta', ReactiveModelChangeEmitterEventMap<T>>, ctx?: any): this {
-    if (this.deleted) {
+    if (this.$deleted) {
       throw new ReactiveModelUnsubscribableException()
     }
     this.#emitter.onceDelta(listener, ctx)
@@ -1027,7 +1034,7 @@ export abstract class BaseReactiveModel<
     listener: Listener<`change:${string}`, ReactiveModelChangeEmitterEventMap<T>>,
     ctx?: any
   ): this {
-    if (this.deleted) {
+    if (this.$deleted) {
       throw new ReactiveModelUnsubscribableException()
     }
     this.#emitter.oncePropertyChange(key as any, listener, ctx)
@@ -1088,6 +1095,7 @@ export abstract class BaseReactiveModel<
     }
     if (this.#boundOnReactiveModelDeletedInSwarm) {
       this.#swarm.off('reactivemodel:deleted', this.#boundOnReactiveModelDeletedInSwarm)
+      this.#swarm.off('reactivemodel:truncated', this.#boundOnReactiveModelDeletedInSwarm)
     }
     // cleanup relationships
     for (const key in this.#relationships) {
@@ -1394,7 +1402,7 @@ export type ReactiveModel<
           ? any[] | undefined
           : any
       : any
-  }
+  } & ReactiveModelAgumentations
 
 /**
  * Describes the constructor of a ReactiveModel.
@@ -1789,6 +1797,7 @@ export const applyReactiveModelConstructorMixin = <
       }
       try {
         await table.clear()
+        eventBus.emit('reactivemodel:truncated', modelName)
         // Mark all instances as deleted after truncate
         cleanupDeadRefs(this)
         for (const instance of getLiveInstances(this)) {
@@ -1884,6 +1893,7 @@ export const makeReactiveModel = <
           addCleanupCallback(this.unref.bind(this))
           registerInstance(this)
           if (hooks && typeof hooks.wrapReactiveModel === 'function') {
+            const raw = this
             return hooks.wrapReactiveModel(this)
           }
         }
@@ -1893,6 +1903,10 @@ export const makeReactiveModel = <
           delete asObject[primaryKey]
           const clone = new ${name}(asObject, introspector)
           return clone
+        }
+
+        get $key() {
+          return this[primaryKey]
         }
       }`
   )

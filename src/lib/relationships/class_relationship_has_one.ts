@@ -228,6 +228,7 @@ export class HasOne<
         }
         this.$swarm.on('reactivemodel:saved', this.#boundOnSwarmSaved)
         this.$swarm.on('reactivemodel:deleted', this.#boundOnSwarmDeleted)
+        this.$swarm.on('reactivemodel:truncated', this.#boundOnSwarmDeleted)
         // Listen for changes to the host's primary key
         emitter.onPropertyChange(this.$originatingModelPrimaryKey, () => {
           onChangeDetected!()
@@ -253,6 +254,7 @@ export class HasOne<
     }
     if (this.#boundOnSwarmDeleted) {
       this.$swarm.off('reactivemodel:deleted', this.#boundOnSwarmDeleted)
+      this.$swarm.off('reactivemodel:truncated', this.#boundOnSwarmDeleted)
     }
     // Remove related table listeners (legacy patch, not needed)
     // this.#boundOnRelatedTableChange = undefined

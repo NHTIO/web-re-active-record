@@ -233,6 +233,7 @@ export class HasMany<
       }
       this.$swarm.on('reactivemodel:saved', this.#boundOnSwarmSaved)
       this.$swarm.on('reactivemodel:deleted', this.#boundOnSwarmDeleted)
+      this.$swarm.on('reactivemodel:truncated', this.#boundOnSwarmDeleted)
     }
     return instances
   }
@@ -253,6 +254,7 @@ export class HasMany<
     }
     if (this.#boundOnSwarmDeleted) {
       this.$swarm.off('reactivemodel:deleted', this.#boundOnSwarmDeleted)
+      this.$swarm.off('reactivemodel:truncated', this.#boundOnSwarmDeleted)
     }
 
     // Reset state

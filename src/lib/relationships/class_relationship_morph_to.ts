@@ -201,6 +201,7 @@ export class MorphTo<
     }
     if (this.#boundOnSwarmDeleted) {
       this.$swarm.off('reactivemodel:deleted', this.#boundOnSwarmDeleted)
+      this.$swarm.off('reactivemodel:truncated', this.#boundOnSwarmDeleted)
     }
     if (!this.$booted || !this.$database) {
       throw new RelationshipNotBootedException()
@@ -235,6 +236,7 @@ export class MorphTo<
     this.value = inst as unknown as ReactiveModel<OM[FM], PKF, any>
     this.$swarm.on('reactivemodel:saved', this.#boundOnSwarmSaved!)
     this.$swarm.on('reactivemodel:deleted', this.#boundOnSwarmDeleted!)
+    this.$swarm.on('reactivemodel:truncated', this.#boundOnSwarmDeleted!)
     if (this.value) {
       this.value.onChange(this.#boundNextRelatedChange)
       this.value.onDelta(this.#boundNextRelatedDelta!)
@@ -265,6 +267,7 @@ export class MorphTo<
     }
     if (this.#boundOnSwarmDeleted) {
       this.$swarm.off('reactivemodel:deleted', this.#boundOnSwarmDeleted)
+      this.$swarm.off('reactivemodel:truncated', this.#boundOnSwarmDeleted)
     }
 
     // Reset state

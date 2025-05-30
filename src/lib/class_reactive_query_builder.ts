@@ -82,6 +82,11 @@ interface PromiseBusEvents {
 
 type PromiseBusEventMap = EventMap<PromiseBusEvents>
 
+interface ReactiveQueryBuilderSortByClause extends ReactiveQueryBuilderClause {
+  method: 'sortBy'
+  args: [string, 'asc' | 'desc']
+}
+
 /**
  * A fluent query builder for ReactiveModel that provides SQL-like query functionality.
  *
@@ -228,6 +233,21 @@ export class ReactiveQueryBuilder<
     )
   }
 
+  #sortArrayBySortClauses(items: T[], clauses: ReactiveQueryBuilderSortByClause[]) {
+    return [...items].sort((a, b) => {
+      for (const clause of clauses) {
+        const [key, direction] = clause.args
+        const aVal = (a as any)[key]
+        const bVal = (b as any)[key]
+        const result = direction === 'asc' ? compareValues(aVal, bVal) : compareValues(bVal, aVal)
+        if (result !== 0) {
+          return result
+        }
+      }
+      return 0 // If all clauses are equal, maintain original order
+    })
+  }
+
   async #execute() {
     if (this.#unreffed) {
       this.#log('warning', 'Query builder has been unreffed, aborting query')
@@ -275,10 +295,16 @@ export class ReactiveQueryBuilder<
     /**
      * Sorting / Ordering
      */
+    const sortByClauses = clauses.filter(
+      (c) => c.method === 'sortBy'
+    ) as ReactiveQueryBuilderSortByClause[]
     const sortByClause = clauses.find((c) => c.method === 'sortBy')
     const sortByArgs = sortByClause ? sortByClause.args : []
     const [sortByKey, sortByDirection] = sortByArgs as [StringKeyOf<T>, 'asc' | 'desc'] | []
-    const canSort = sortByKey && this.#isDexieIndexedKey(sortByKey)
+    const canSortByDexie =
+      sortByKey && this.#isDexieIndexedKey(sortByKey) && sortByClauses.length === 1
+    const canSort = sortByClauses.length > 0
+
     /**
      * When dealing with first or last, because we cannot run sorting functions before returning the first or last
      * we need to run the sort after we have the collection, and then return the first or last
@@ -286,13 +312,7 @@ export class ReactiveQueryBuilder<
     if (finalClause && (finalClause.method === 'first' || finalClause.method === 'last')) {
       if (canSort) {
         const asArray = await collection.toArray()
-        const sorted = asArray.sort((a, b) => {
-          const comparableA = a[sortByKey]
-          const comparableB = b[sortByKey]
-          return sortByDirection === 'desc'
-            ? compareValues(comparableB, comparableA)
-            : compareValues(comparableA, comparableB)
-        })
+        const sorted = this.#sortArrayBySortClauses(asArray as T[], sortByClauses)
         const item = finalClause.method === 'first' ? sorted[0] : sorted[sorted.length - 1]
         this.#cachedResult = item ? await this.#getReturnable(item) : undefined
         this.#hasCachedResult = true
@@ -323,13 +343,20 @@ export class ReactiveQueryBuilder<
       collection = collection.limit(limitClause.args[0])
     }
     let results: Array<T>
-    if (canSort) {
+    if (canSortByDexie) {
+      const remainingSortByClauses = sortByClauses.filter(
+        (c) => c.args[0] !== sortByKey || c.args[1] !== sortByDirection
+      )
       if ('desc' === sortByDirection) {
         collection = collection.reverse()
       }
       results = await collection.sortBy(sortByKey)
+      results = this.#sortArrayBySortClauses(results, remainingSortByClauses)
     } else {
       results = await collection.toArray()
+      if (canSort) {
+        results = this.#sortArrayBySortClauses(results as T[], sortByClauses)
+      }
     }
     this.#cachedResult = await this.#getReturnableArray(results)
     this.#hasCachedResult = true

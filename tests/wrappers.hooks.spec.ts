@@ -264,3 +264,66 @@ describe('wrapReactiveModel hook (unref/cleanup)', () => {
     expect(onChange).not.toHaveBeenCalled()
   })
 })
+describe('wrapReactiveModel hook (truncate reactivity)', () => {
+  testWithProxyModel(
+    'should mark all proxy model instances as deleted and remove listeners after truncate',
+    async ({ TestModel }) => {
+      const model1 = await TestModel.create({ name: 'A', active: true })
+      const model2 = await TestModel.create({ name: 'B', active: false })
+      const spy1 = vi.fn()
+      const spy2 = vi.fn()
+      model1.onChange(spy1)
+      model2.onChange(spy2)
+      await TestModel.truncate()
+      // Both proxies should be marked as deleted and not emit changes
+      await expect(async () => {
+        model1.name = 'C'
+        await model1.save()
+      }).rejects.toThrow()
+      await expect(async () => {
+        model2.active = true
+        await model2.save()
+      }).rejects.toThrow()
+      expect(spy1).not.toHaveBeenCalled()
+      expect(spy2).not.toHaveBeenCalled()
+      expect((model1 as any).__isProxyModel).toBe(true)
+      expect((model2 as any).__isProxyModel).toBe(true)
+    }
+  )
+
+  testWithProxyModel(
+    'should allow new proxy model instances after truncate and not call old listeners',
+    async ({ TestModel }) => {
+      const model1 = await TestModel.create({ name: 'A', active: true })
+      const spy1 = vi.fn()
+      model1.onChange(spy1)
+      await TestModel.truncate()
+      const model2 = await TestModel.create({ name: 'B', active: false })
+      const spy2 = vi.fn()
+      model2.onChange(spy2)
+      model2.name = 'C'
+      await model2.save()
+      expect(spy1).not.toHaveBeenCalled()
+      expect(spy2).toHaveBeenCalled()
+      expect((model2 as any).__isProxyModel).toBe(true)
+    }
+  )
+
+  testWithProxyModel(
+    'should not call onDelta or onPropertyChange after truncate (proxy)',
+    async ({ TestModel }) => {
+      const model = await TestModel.create({ name: 'A', active: true })
+      const deltaSpy = vi.fn()
+      const propSpy = vi.fn()
+      model.onDelta(deltaSpy)
+      model.onPropertyChange('name', propSpy)
+      await TestModel.truncate()
+      await expect(async () => {
+        model.name = 'Z'
+        await model.save()
+      }).rejects.toThrow()
+      expect(deltaSpy).not.toHaveBeenCalled()
+      expect(propSpy).not.toHaveBeenCalled()
+    }
+  )
+})

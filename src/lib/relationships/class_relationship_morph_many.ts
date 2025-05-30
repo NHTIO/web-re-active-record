@@ -204,6 +204,7 @@ export class MorphMany<
     }
     if ('function' === typeof this.#boundOnSwarmDeleted) {
       this.$swarm.off('reactivemodel:deleted', this.#boundOnSwarmDeleted)
+      this.$swarm.off('reactivemodel:truncated', this.#boundOnSwarmDeleted)
     }
     if (this.#hasHookedForeignKeyWatcher && Array.isArray(this.value)) {
       this.value.forEach((instance) => {
@@ -260,6 +261,7 @@ export class MorphMany<
     this.value = match
     this.$swarm.on('reactivemodel:saved', this.#boundOnSwarmSaved!)
     this.$swarm.on('reactivemodel:deleted', this.#boundOnSwarmDeleted!)
+    this.$swarm.on('reactivemodel:truncated', this.#boundOnSwarmDeleted!)
     if (this.value) {
       this.value.forEach((instance) => {
         instance.onChange(this.#boundNextRelatedChange!)
@@ -290,6 +292,7 @@ export class MorphMany<
     }
     if (this.#boundOnSwarmDeleted) {
       this.$swarm.off('reactivemodel:deleted', this.#boundOnSwarmDeleted)
+      this.$swarm.off('reactivemodel:truncated', this.#boundOnSwarmDeleted)
     }
 
     // Reset state

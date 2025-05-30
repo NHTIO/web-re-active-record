@@ -89,7 +89,7 @@ describe('ReactiveModel', () => {
     expect(model.id).toBeUndefined() // id is undefined before save
     expect(model.name).toBe('Test Model')
     expect(model.active).toBe(true)
-    expect(model.dirty).toBe(true) // Initial values are considered dirty until saved
+    expect(model.$dirty).toBe(true) // Initial values are considered dirty until saved
   })
 
   test('should create a model using static create method', async ({ TestModel }) => {
@@ -104,7 +104,7 @@ describe('ReactiveModel', () => {
     expect(model.id).toBeGreaterThan(0)
     expect(model.name).toBe('Test Model')
     expect(model.active).toBe(true)
-    expect(model.dirty).toBe(false) // No pending changes after create
+    expect(model.$dirty).toBe(false) // No pending changes after create
 
     // Verify the model exists in the database
     const allModels = await TestModel.all()
@@ -132,7 +132,7 @@ describe('ReactiveModel', () => {
       expect(model.id).toBeGreaterThan(0)
       expect(model.name).toBe(modelsToCreate[i].name)
       expect(model.active).toBe(modelsToCreate[i].active)
-      expect(model.dirty).toBe(false)
+      expect(model.$dirty).toBe(false)
     }
 
     // Verify IDs are unique
@@ -343,7 +343,7 @@ describe('ReactiveModel', () => {
     expect(existing.id).toBeDefined()
     expect(existing.name).toBe('Test Model')
     expect(existing.active).toBe(true)
-    expect(existing.dirty).toBe(false)
+    expect(existing.$dirty).toBe(false)
 
     // Get new model
     const newModel = await TestModel.firstOrNew(
@@ -353,7 +353,7 @@ describe('ReactiveModel', () => {
     expect(newModel.id).toBeUndefined()
     expect(newModel.name).toBe('New Model')
     expect(newModel.active).toBe(false)
-    expect(newModel.dirty).toBe(true) // New models are dirty until saved
+    expect(newModel.$dirty).toBe(true) // New models are dirty until saved
 
     // Verify new model wasn't saved
     const all = await TestModel.all()
@@ -374,7 +374,7 @@ describe('ReactiveModel', () => {
     expect(existing.id).toBeDefined()
     expect(existing.name).toBe('Test Model')
     expect(existing.active).toBe(true)
-    expect(existing.dirty).toBe(false)
+    expect(existing.$dirty).toBe(false)
 
     // Create new model
     const newModel = await TestModel.firstOrCreate(
@@ -384,7 +384,7 @@ describe('ReactiveModel', () => {
     expect(newModel.id).toBeDefined()
     expect(newModel.name).toBe('New Model')
     expect(newModel.active).toBe(false)
-    expect(newModel.dirty).toBe(false)
+    expect(newModel.$dirty).toBe(false)
 
     // Verify new model was saved
     const all = await TestModel.all()
@@ -407,7 +407,7 @@ describe('ReactiveModel', () => {
     expect(updated.id).toBeDefined()
     expect(updated.name).toBe('Test Model')
     expect(updated.active).toBe(false)
-    expect(updated.dirty).toBe(false)
+    expect(updated.$dirty).toBe(false)
     const allAfterUpdate = await TestModel.all()
     expect(allAfterUpdate).toHaveLength(1)
 
@@ -416,7 +416,7 @@ describe('ReactiveModel', () => {
     expect(created.id).toBeDefined()
     expect(created.name).toBe('New Model')
     expect(created.active).toBe(true)
-    expect(created.dirty).toBe(false)
+    expect(created.$dirty).toBe(false)
     const allAfterCreateNew = await TestModel.all()
     expect(allAfterCreateNew).toHaveLength(2)
 
@@ -462,11 +462,11 @@ describe('ReactiveModel', () => {
     // Verify only undefined properties were filled
     expect(model.name).toBe('Test Model') // Should not change existing property
     expect(model.active).toBe(true) // Should fill undefined property
-    expect(model.dirty).toBe(true)
+    expect(model.$dirty).toBe(true)
 
     // Save changes
     await model.save()
-    expect(model.dirty).toBe(false)
+    expect(model.$dirty).toBe(false)
 
     // Verify changes were saved
     const found = await TestModel.find(model.id)
@@ -512,32 +512,32 @@ describe('ReactiveModel', () => {
     })
 
     // Initial state should be dirty
-    expect(model.dirty).toBe(true)
+    expect(model.$dirty).toBe(true)
 
     await model.save() // Save initial state, which should clear dirty state
-    expect(model.dirty).toBe(false)
+    expect(model.$dirty).toBe(false)
     expect(model.id).toBeDefined()
 
     // Modify properties using merge
     model.merge({
       name: 'Updated Model',
     })
-    expect(model.dirty).toBe(true)
+    expect(model.$dirty).toBe(true)
 
     // Save changes
     await model.save()
-    expect(model.dirty).toBe(false)
+    expect(model.$dirty).toBe(false)
 
     // Modify multiple properties
     model.merge({
       name: 'Modified Model',
       active: false,
     })
-    expect(model.dirty).toBe(true)
+    expect(model.$dirty).toBe(true)
 
     // Reset changes
     model.reset()
-    expect(model.dirty).toBe(false)
+    expect(model.$dirty).toBe(false)
     expect(model.name).toBe('Updated Model')
     expect(model.active).toBe(true)
   })
@@ -550,23 +550,23 @@ describe('ReactiveModel', () => {
     })
 
     // Initial state should be dirty
-    expect(model.dirty).toBe(true)
-    expect(Object.keys(model.pending)).toHaveLength(2)
+    expect(model.$dirty).toBe(true)
+    expect(Object.keys(model.$pending)).toHaveLength(2)
 
     // Save initial state, which should clear dirty state
     await model.save()
-    expect(model.dirty).toBe(false)
-    expect(Object.keys(model.pending)).toHaveLength(0)
+    expect(model.$dirty).toBe(false)
+    expect(Object.keys(model.$pending)).toHaveLength(0)
 
     // Modify property to create pending change
     model.merge({
       name: 'Updated Model',
     })
-    expect(Object.keys(model.pending)).toHaveLength(1)
+    expect(Object.keys(model.$pending)).toHaveLength(1)
 
     // Save should clear pending changes
     await model.save()
-    expect(Object.keys(model.pending)).toHaveLength(0)
+    expect(Object.keys(model.$pending)).toHaveLength(0)
   })
 
   test('should provide primary key through key property', async ({ TestModel }) => {
@@ -577,9 +577,9 @@ describe('ReactiveModel', () => {
     })
 
     // Key should match id for this model
-    expect(model.key).toBe(model.id)
-    expect(typeof model.key).toBe('number')
-    expect(model.key).toBeGreaterThan(0)
+    expect(model.$key).toBe(model.id)
+    expect(typeof model.$key).toBe('number')
+    expect(model.$key).toBeGreaterThan(0)
   })
 
   test('should handle once listeners correctly', async ({ TestModel }) => {
@@ -784,6 +784,6 @@ describe('ReactiveModel', () => {
       name: originalName,
       active: originalActive,
     })
-    expect(model.key).toBe(originalId)
+    expect(model.$key).toBe(originalId)
   })
 })

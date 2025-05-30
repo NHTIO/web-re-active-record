@@ -149,6 +149,9 @@ export class ManyToMany<
 > extends HasManyThrough<OM, TM, PKT, FM, PKF, JM, JPKT, JPKF> {
   readonly #joinTable: JM
   #hasJoinTableListener = false
+  #boundOnJoinTableSaved?: (model: string) => void
+  #boundOnJoinTableDeleted?: (model: string) => void
+  #boundOnJoinTableTruncated?: (model: string) => void
 
   constructor(
     key: string,
@@ -203,19 +206,48 @@ export class ManyToMany<
       if (!this.#hasJoinTableListener) {
         if (this.#joinTable && this.$swarm) {
           this.#hasJoinTableListener = true
-          this.$swarm.on('reactivemodel:saved', (model: string) => {
+          this.#boundOnJoinTableSaved = (model: string) => {
             if (model === this.#joinTable && typeof wrappedOnChange === 'function') {
               wrappedOnChange()
             }
-          })
-          this.$swarm.on('reactivemodel:deleted', (model: string) => {
+          }
+          this.#boundOnJoinTableDeleted = (model: string) => {
             if (model === this.#joinTable && typeof wrappedOnChange === 'function') {
               wrappedOnChange()
             }
-          })
+          }
+          this.#boundOnJoinTableTruncated = (model: string) => {
+            if (model === this.#joinTable && typeof wrappedOnChange === 'function') {
+              wrappedOnChange()
+            }
+          }
+          this.$swarm.on('reactivemodel:saved', this.#boundOnJoinTableSaved)
+          this.$swarm.on('reactivemodel:deleted', this.#boundOnJoinTableDeleted)
+          this.$swarm.on('reactivemodel:truncated', this.#boundOnJoinTableTruncated)
         }
       }
     }
     return result
+  }
+
+  async unref(): Promise<void> {
+    // Unbind join table listeners
+    if (this.#hasJoinTableListener) {
+      if (this.#boundOnJoinTableSaved) {
+        this.$swarm.off('reactivemodel:saved', this.#boundOnJoinTableSaved)
+      }
+      if (this.#boundOnJoinTableDeleted) {
+        this.$swarm.off('reactivemodel:deleted', this.#boundOnJoinTableDeleted)
+      }
+      if (this.#boundOnJoinTableTruncated) {
+        this.$swarm.off('reactivemodel:truncated', this.#boundOnJoinTableTruncated)
+      }
+      this.#hasJoinTableListener = false
+      this.#boundOnJoinTableSaved = undefined
+      this.#boundOnJoinTableDeleted = undefined
+      this.#boundOnJoinTableTruncated = undefined
+    }
+    // Call super's unref
+    await super.unref()
   }
 }

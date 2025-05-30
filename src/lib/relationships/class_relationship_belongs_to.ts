@@ -204,6 +204,7 @@ export class BelongsTo<
       }
       this.$swarm.on('reactivemodel:saved', this.#boundOnSwarmSaved)
       this.$swarm.on('reactivemodel:deleted', this.#boundOnSwarmDeleted)
+      this.$swarm.on('reactivemodel:truncated', this.#boundOnSwarmDeleted)
       emitter.onPropertyChange(this.#foreignModelLookupKey, () => {
         this.value = undefined // Invalidate cache when FK changes
         onChangeDetected()
@@ -225,6 +226,7 @@ export class BelongsTo<
     }
     if (this.#boundOnSwarmDeleted) {
       this.$swarm.off('reactivemodel:deleted', this.#boundOnSwarmDeleted)
+      this.$swarm.off('reactivemodel:truncated', this.#boundOnSwarmDeleted)
     }
 
     // Reset state

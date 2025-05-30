@@ -134,9 +134,17 @@ export abstract class ReactiveQueryResponse<T = any> extends TypedEventEmitter<
     this.#boundOnDeleted = this.#onDeleted.bind(this)
     this.#bus.on('reactivemodel:saved', this.#boundOnSaved)
     this.#bus.on('reactivemodel:deleted', this.#boundOnDeleted)
+    this.#bus.on('reactivemodel:truncated', this.#boundOnDeleted)
     Object.defineProperty(this, 'value', {
       get: () => {
         return this.#value as T
+      },
+      enumerable: true,
+      configurable: false,
+    })
+    Object.defineProperty(this, 'unmount', {
+      get: () => {
+        return this.#unmount.bind(this)
       },
       enumerable: true,
       configurable: false,
@@ -243,7 +251,7 @@ export abstract class ReactiveQueryResponse<T = any> extends TypedEventEmitter<
    * Unmounts the response, aborting any in-flight requests, unsubscribing from all events,
    * and cleaning up all resources. After unmount, no further events will be emitted.
    */
-  unmount(): void {
+  #unmount(): void {
     if (this.#unmounted) return
     this.#unmounted = true
     this.#observable.complete()
@@ -251,7 +259,14 @@ export abstract class ReactiveQueryResponse<T = any> extends TypedEventEmitter<
     this.#abortControllers.forEach((controller) => controller.abort())
     this.#abortControllers.clear()
     if (this.#boundOnSaved) this.#bus.off('reactivemodel:saved', this.#boundOnSaved)
-    if (this.#boundOnDeleted) this.#bus.off('reactivemodel:deleted', this.#boundOnDeleted)
+    if (this.#boundOnDeleted) {
+      this.#bus.off('reactivemodel:deleted', this.#boundOnDeleted)
+      this.#bus.off('reactivemodel:truncated', this.#boundOnDeleted)
+    }
+  }
+
+  public unmount(): void {
+    this.#unmount()
   }
 
   /**

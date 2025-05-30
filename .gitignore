@@ -11,3 +11,5 @@ docs/api/*
 !docs/api/.gitkeep
 tests/__screenshots__/
 junit.xml
+.DS_Store
+docs/.DS_Store

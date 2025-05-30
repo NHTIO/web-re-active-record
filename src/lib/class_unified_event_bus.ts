@@ -15,6 +15,9 @@ export class UnifiedEventBus extends TypedEventEmitter<ReactiveStateTypedEventMa
     this.#swarm.on('reactivemodel:deleted', (model, pk) => {
       super.emit('reactivemodel:deleted', model, pk)
     })
+    this.#swarm.on('reactivemodel:truncated', (model) => {
+      super.emit('reactivemodel:truncated', model)
+    })
   }
 
   emit<K extends keyof ReactiveStateTypedEventMap>(
