@@ -1,6 +1,6 @@
 {
   "name": "@nhtio/web-re-active-record",
-  "version": "1.20250530.0",
+  "version": "1.20250531.0",
   "description": "A Reactive Active Record ORM for Web Browsers and Web Workers",
   "scripts": {
     "customize": "npx jiti bin/customize.ts",
@@ -68,6 +68,7 @@
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.4.0",
     "vite": "^5.4.3",
+    "vite-plugin-node-polyfills": "^0.23.0",
     "vitepress": "^1.6.3",
     "vitepress-plugin-mermaid": "^2.0.17",
     "vitest": "^3.1.4",

@@ -2,6 +2,7 @@ import { resolve } from 'path'
 import { readFile } from 'fs/promises'
 import { getEntries } from './bin/utils'
 import { defineConfig, loadEnv } from 'vite'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import type { UserConfig } from 'vite'
 
 const LIB_NAME = '@nhtio/web-re-active-record'
@@ -32,7 +33,11 @@ export default defineConfig(async ({ mode }) => {
   }
   const external = Array.from(externals).filter((ext) => !nonExternal.has(ext))
   return {
-    plugins: [],
+    plugins: [
+      nodePolyfills({
+        include: ['url', 'util'],
+      }),
+    ],
     build: {
       sourcemap: true,
       minify: true,
@@ -67,7 +72,7 @@ export default defineConfig(async ({ mode }) => {
         [LIB_NAME]: resolve(BASE_DIR, 'src'),
         '@': resolve(BASE_DIR, 'src'),
       },
-      mainFields: ['browser', 'module', 'jsnext:main', 'jsnext'],
+      mainFields: ['module', 'jsnext:main', 'jsnext'],
     },
     define: {
       __VERSION__: JSON.stringify(packageJson.version),
